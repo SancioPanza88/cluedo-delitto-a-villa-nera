@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLUEDO — Delitto a Villa Nera</title>
+<!--
+════════════════════════════════════════════════════════════════════════════
+  CLUEDO — "Delitto a Villa Nera" · clone giocabile in UNICO file HTML
+════════════════════════════════════════════════════════════════════════════
+  COME GIOCARE: apri questo file nel browser. Nessun server, nessuna build.
+
+  ── GUIDA ASSET (per Gemini) ──────────────────────────────────────────────
+  Il gioco funziona GIÀ senza immagini (usa emoji/portrait CSS di fallback).
+  Per renderlo spettacolare, genera con Gemini i file qui sotto e mettili
+  in una cartella  assets/  accanto a questo file. Verranno caricati
+  automaticamente; se mancano, si vede il fallback (nessun errore).
+
+  Stile consigliato (copialo in ogni prompt per coerenza):
+  "noir art-deco, digital painting, dark academia, gold and emerald palette,
+   elegant mystery board-game art, soft cinematic light, no text, no watermark"
+
+  FILE ATTESI (nomi esatti):
+    Sospetti (ritratto busto, sfondo scuro, 1:1):
+      assets/suspect-rosso.jpg      → donna fatale anni '50, abito rosso
+      assets/suspect-senape.jpg     → colonnello baffuto, uniforme giallo senape
+      assets/suspect-bianca.jpg     → governante anziana, grembiule bianco
+      assets/suspect-verdi.jpg      → reverendo, abito verde bosco
+      assets/suspect-pavone.jpg     → contessa elegante, abito blu pavone
+      assets/suspect-prugna.jpg     → professore, tweed viola
+    Armi (oggetto su piedistallo scuro, 1:1):
+      assets/weapon-candelabro.jpg, assets/weapon-pugnale.jpg,
+      assets/weapon-tubo.jpg, assets/weapon-pistola.jpg,
+      assets/weapon-corda.jpg, assets/weapon-chiave.jpg
+    Stanze (interno vista dall'alto/di scorcio, 16:9):
+      assets/room-cucina.jpg, assets/room-ballo.jpg, assets/room-serra.jpg,
+      assets/room-pranzo.jpg, assets/room-biliardo.jpg, assets/room-biblioteca.jpg,
+      assets/room-salotto.jpg, assets/room-ingresso.jpg, assets/room-studio.jpg
+    Extra (opzionali):
+      assets/logo.jpg               → corvo + lente d'ingrandimento dorata
+      assets/card-back.jpg          → dorso carta art-deco verde/oro
+      assets/board-texture.jpg      → parquet scuro (texture del tabellone)
+
+  Scorciatoia: dal gioco premi "🎨 Asset" → "Importa i tuoi asset" per
+  caricare le immagini SENZA creare la cartella (abbinamento automatico
+  dal nome file, es. "suspect-rosso.jpg").
+════════════════════════════════════════════════════════════════════════════
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d1117; --bg2:#141a22; --panel:#171e28; --panel2:#1e2634;
+  --gold:#d4af37; --gold2:#f3d67c; --ink:#e9e4d6; --muted:#9aa3b2;
+  --green:#1f6f4a; --red:#b3372f; --line:#2b3444;
+  --shadow:0 10px 40px rgba(0,0,0,.55);
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:
+    radial-gradient(1200px 600px at 15% -10%, rgba(212,175,55,.10), transparent 60%),
+    radial-gradient(1000px 700px at 110% 20%, rgba(31,111,74,.14), transparent 55%),
+    radial-gradient(900px 900px at 50% 120%, rgba(179,55,47,.08), transparent 60%),
+    var(--bg);
+  color:var(--ink);
+  font-family:'Inter',system-ui,sans-serif;
+  min-height:100vh;
+}
+/* subtle art-deco pattern */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.05;
+  background-image:repeating-linear-gradient(45deg,var(--gold) 0 1px,transparent 1px 14px),
+                   repeating-linear-gradient(-45deg,var(--gold) 0 1px,transparent 1px 14px);
+}
+h1,h2,h3,.serif{font-family:'Playfair Display',Georgia,serif}
+header{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:14px 20px;border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(20,26,34,.95),rgba(13,17,23,.9));
+  position:sticky;top:0;z-index:50;backdrop-filter:blur(6px);
+}
+.logo{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:24px;
+  background:radial-gradient(circle at 30% 30%,#2b3444,#10151d);
+  border:2px solid var(--gold);box-shadow:0 0 18px rgba(212,175,55,.35);overflow:hidden}
+.logo img{width:100%;height:100%;object-fit:cover}
+header h1{font-size:22px;margin:0;letter-spacing:1px}
+header h1 small{display:block;font-family:'Inter';font-size:11px;color:var(--muted);letter-spacing:3px;text-transform:uppercase}
+.hdr-sp{flex:1}
+.btn{
+  background:linear-gradient(180deg,#2a3342,#1a212c);color:var(--ink);
+  border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:13px;font-weight:600;
+  cursor:pointer;transition:.15s;
+}
+.btn:hover{border-color:var(--gold);transform:translateY(-1px)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn.gold{background:linear-gradient(180deg,#f0d678,#b8912a);color:#1a1405;border-color:#8a6d1f}
+.btn.gold:hover{filter:brightness(1.07)}
+.btn.danger{background:linear-gradient(180deg,#7a2a26,#4d1715);border-color:#8a3a36}
+.btn.ghost{background:transparent}
+main{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:16px;padding:16px 20px 40px;max-width:1500px;margin:0 auto;align-items:start}
+@media(max-width:1050px){main{grid-template-columns:1fr}}
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+/* ── Board ─────────────────────────────── */
+#boardWrap{padding:14px}
+#boardHead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+#turnBadge{font-size:13px;background:#10151d;border:1px solid var(--gold);border-radius:999px;padding:6px 12px}
+#turnBadge b{color:var(--gold2)}
+#diceBox{display:flex;align-items:center;gap:8px}
+.die{width:38px;height:38px;border-radius:9px;display:grid;place-items:center;font-size:20px;font-weight:800;color:#14100a;
+  background:linear-gradient(180deg,#fffdf4,#d9cfae);box-shadow:0 3px 0 #8a7c52,0 6px 14px rgba(0,0,0,.5)}
+.die.rolling{animation:shake .12s infinite}
+@keyframes shake{0%{transform:rotate(-8deg)}50%{transform:rotate(8deg) scale(1.06)}100%{transform:rotate(-8deg)}}
+#board{
+  position:relative;width:100%;aspect-ratio:1/1;border-radius:10px;overflow:hidden;
+  border:2px solid #3a2f16;outline:1px solid var(--gold);
+  background:#241a10;
+  box-shadow:inset 0 0 80px rgba(0,0,0,.7),0 10px 40px rgba(0,0,0,.6);
+  user-select:none;
+}
+#cells{position:absolute;inset:0;display:grid;grid-template-columns:repeat(24,1fr);grid-template-rows:repeat(24,1fr)}
+.cell{position:relative;border:1px solid rgba(255,255,255,.045);
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.03),rgba(0,0,0,.12)),
+    repeating-conic-gradient(#2b2114 0 25%, #261d11 0 50%) 0 0/22px 22px;
+}
+.cell.room{border-color:rgba(0,0,0,.35)}
+.cell.door{cursor:pointer}
+.cell.door::after{content:"";position:absolute;inset:18%;border:2px dashed var(--gold2);border-radius:4px;animation:doorPulse 1.6s infinite}
+@keyframes doorPulse{50%{opacity:.35}}
+.cell.reachable{cursor:pointer}
+.cell.reachable::before{content:"";position:absolute;inset:22%;border-radius:50%;
+  background:radial-gradient(circle,rgba(243,214,124,.95),rgba(243,214,124,.15) 70%);
+  box-shadow:0 0 12px rgba(243,214,124,.8);animation:doorPulse 1.2s infinite}
+.cell.reachable.door::before{inset:8%}
+.cell.start::after{content:"";position:absolute;inset:26%;border-radius:50%;border:2px solid var(--sc,#fff);opacity:.8}
+#roomLabels{position:absolute;inset:0;pointer-events:none}
+.roomLabel{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  text-align:center;padding:4px;border-radius:8px;pointer-events:none}
+.roomLabel .rico{font-size:clamp(14px,3.2vw,30px);filter:drop-shadow(0 2px 4px rgba(0,0,0,.7))}
+.roomLabel .rname{font-family:'Playfair Display',serif;font-weight:700;font-size:clamp(8px,1.5vw,14px);
+  letter-spacing:1px;color:#f5edd3;text-shadow:0 2px 6px #000;text-transform:uppercase}
+.roomLabel img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.35;border-radius:8px}
+#pawns{position:absolute;inset:0;pointer-events:none}
+.pawn{position:absolute;width:4.6%;aspect-ratio:1/1;transform:translate(-50%,-50%);transition:left .45s ease,top .45s ease;z-index:5}
+.pawn .tok{width:100%;height:100%;border-radius:50%;display:grid;place-items:center;position:relative;
+  font-weight:800;font-size:clamp(8px,1.6vw,15px);color:#fff;
+  background:radial-gradient(circle at 30% 30%,var(--c2,#888),var(--c1,#333) 70%);
+  border:2px solid #f5edd3;box-shadow:0 3px 8px rgba(0,0,0,.7),0 0 10px var(--c1,#333);overflow:hidden}
+.pawn .tok img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pawn.mine .tok{outline:2px solid var(--gold2);outline-offset:2px}
+.pawn.out .tok{filter:grayscale(1);opacity:.45}
+.pawn .pname{position:absolute;top:100%;left:50%;transform:translateX(-50%);font-size:9px;white-space:nowrap;
+  background:rgba(0,0,0,.75);padding:1px 5px;border-radius:6px;color:#f5edd3}
+#boardLegend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;font-size:12px;color:var(--muted)}
+#boardLegend .chip{display:flex;align-items:center;gap:6px;background:#10151d;border:1px solid var(--line);border-radius:999px;padding:3px 10px 3px 4px}
+.dot{width:18px;height:18px;border-radius:50%;display:inline-grid;place-items:center;font-size:10px;color:#fff;font-weight:800;flex:none}
+/* ── Side panel ────────────────────────── */
+#side{display:flex;flex-direction:column;gap:12px;position:sticky;top:84px}
+@media(max-width:1050px){#side{position:static}}
+#statusBox{padding:14px 16px}
+#statusBox h3{margin:0 0 6px;font-size:18px}
+#phaseHint{font-size:13px;color:var(--muted);min-height:36px}
+#actionRow{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.tabs{display:flex;gap:4px;padding:8px 8px 0}
+.tab{flex:1;background:transparent;border:1px solid transparent;border-bottom:none;color:var(--muted);
+  padding:9px 4px;font-size:13px;font-weight:700;cursor:pointer;border-radius:10px 10px 0 0}
+.tab.active{color:var(--gold2);background:rgba(212,175,55,.07);border-color:var(--line)}
+.tabBody{border-top:1px solid var(--line);padding:12px 14px;max-height:46vh;overflow:auto}
+#handList{display:grid;gap:8px}
+.pcard{display:flex;gap:10px;align-items:center;background:#10151d;border:1px solid var(--line);border-radius:10px;padding:8px 10px;animation:pop .25s}
+.pcard .art{width:44px;height:44px;border-radius:8px;flex:none;display:grid;place-items:center;font-size:24px;background:#222b3a;position:relative;overflow:hidden}
+.pcard .art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pcard b{font-size:13px;display:block}
+.pcard span{font-size:11px;color:var(--muted)}
+@keyframes pop{from{transform:scale(.92);opacity:0}}
+/* notebook */
+.ntable{width:100%;border-collapse:collapse;font-size:12.5px}
+.ntable th{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);text-align:left;padding:4px}
+.ntable td{padding:5px 4px;border-top:1px solid var(--line)}
+.ntable tr.cat td{background:rgba(212,175,55,.08);font-weight:800;color:var(--gold2);font-size:11px;letter-spacing:2px}
+.nmark{cursor:pointer;user-select:none;font-size:15px;text-align:center;width:44px;border-radius:8px}
+.nmark:hover{background:rgba(212,175,55,.12)}
+.st-yes{color:#7ee2a8}.st-no{color:#ff8f8a}.st-maybe{color:var(--gold2)}.st-unk{color:#5b6575}
+/* log */
+#logList{display:flex;flex-direction:column;gap:7px;font-size:13px}
+.log{background:#10151d;border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:8px;padding:7px 10px;animation:pop .25s}
+.log small{color:var(--muted)}
+.log.secret{border-left-color:#7aa2ff}.log.good{border-left-color:#7ee2a8}.log.bad{border-left-color:#ff8f8a}
+/* overlays & modals */
+.overlay{position:fixed;inset:0;background:rgba(5,7,10,.78);backdrop-filter:blur(4px);display:none;place-items:center;z-index:100;padding:16px}
+.overlay.show{display:grid}
+.sheet{width:min(640px,100%);max-height:92vh;overflow:auto;background:linear-gradient(180deg,#1e2634,#131923);
+  border:1px solid var(--gold);border-radius:18px;padding:24px;box-shadow:var(--shadow);animation:pop .25s}
+.sheet h2{margin:0 0 4px;font-size:26px}
+.sheet h2 .accent{color:var(--gold2)}
+.sheet p.sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+.optGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+@media(max-width:520px){.optGrid{grid-template-columns:repeat(2,1fr)}}
+.pick{border:2px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;cursor:pointer;background:#10151d;transition:.15s}
+.pick:hover{border-color:var(--gold)}
+.pick.sel{border-color:var(--gold2);background:rgba(212,175,55,.12);box-shadow:0 0 14px rgba(212,175,55,.25)}
+.pick .big{font-size:30px}.pick .who{width:56px;height:56px;margin:0 auto;font-size:28px}
+.pick .who img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.pick.sel .who{box-shadow:0 0 14px rgba(243,214,124,.8)}
+.pick b{font-size:12px;display:block;margin-top:6px}
+.pick small{color:var(--muted);font-size:11px}
+select,input[type=text]{width:100%;background:#10151d;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:14px;margin:4px 0}
+label.fl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.rowBtns{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.rowBtns .btn{flex:1;min-width:130px}
+.revealCard{display:flex;gap:14px;align-items:center;background:#10151d;border:1px solid var(--gold);border-radius:14px;padding:14px;margin:12px 0}
+.revealCard .art{width:84px;height:84px;border-radius:12px;background:#222b3a;display:grid;place-items:center;font-size:48px;position:relative;overflow:hidden;flex:none}
+.revealCard .art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.kbd{background:#000;border:1px solid var(--line);border-radius:6px;padding:1px 7px;font-size:12px}
+#toasts{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center}
+.toast{background:#10151d;border:1px solid var(--gold);border-radius:999px;padding:9px 18px;font-size:13px;box-shadow:var(--shadow);animation:pop .25s}
+details.assets{background:#10151d;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:10px;font-size:12.5px}
+details.assets summary{cursor:pointer;color:var(--gold2);font-weight:700}
+code{background:#000;padding:1px 6px;border-radius:6px;font-size:12px;color:var(--gold2)}
+#setupPawns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.confetti{position:fixed;top:-10px;z-index:300;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
+/* ── Tutto in una finestra (desktop): niente scroll di pagina ── */
+@media(min-width:1051px){
+  html,body{height:100%}
+  body{display:flex;flex-direction:column;overflow:hidden}
+  header{flex:none}
+  main{flex:1;min-height:0;width:100%;padding:12px 20px}
+  #boardWrap{min-height:0;overflow:hidden;display:flex;flex-direction:column}
+  #boardHead{flex:none}
+  #board{flex:none;margin:auto}
+  #boardLegend{flex:none;font-size:11px}
+  #side{position:static;min-height:0;overflow-y:auto;overflow-x:hidden}
+  footer{display:none}
+}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo" id="logoBox">🕵️</div>
+  <h1>CLUEDO <small>Delitto a Villa Nera</small></h1>
+  <div class="hdr-sp"></div>
+  <span id="clock" class="kbd">⏱ 00:00 · Turno 0</span>
+  <button class="btn" id="btnSound">🔊 Audio</button>
+  <button class="btn" id="btnHelp">❓ Regole</button>
+  <button class="btn gold" id="btnNew">↺ Nuova partita</button>
+</header>
+
+<main>
+  <!-- ═══ TABELLONE ═══ -->
+  <section class="card" id="boardWrap">
+    <div id="boardHead">
+      <span id="turnBadge">In attesa…</span>
+      <div id="diceBox">
+        <div class="die" id="die1">⚄</div>
+        <div class="die" id="die2">⚄</div>
+      </div>
+      <div class="hdr-sp"></div>
+      <span id="envBadge" class="kbd">✉️ busta: 3 carte top-secret</span>
+    </div>
+    <div id="board">
+      <div id="cells"></div>
+      <div id="roomLabels"></div>
+      <div id="pawns"></div>
+    </div>
+    <div id="boardLegend"></div>
+  </section>
+
+  <!-- ═══ PANNELLO ═══ -->
+  <aside id="side">
+    <div class="card" id="statusBox">
+      <h3 id="statusTitle">Benvenuto, detective</h3>
+      <div id="phaseHint">Premi “Nuova partita” per iniziare le indagini.</div>
+      <div id="actionRow"></div>
+    </div>
+    <div class="card">
+      <div class="tabs">
+        <button class="tab active" data-tab="hand">🂡 Mano</button>
+        <button class="tab" data-tab="notes">📓 Taccuino</button>
+        <button class="tab" data-tab="log">📜 Diario</button>
+      </div>
+      <div class="tabBody" id="tab-hand"><div id="handList"></div></div>
+      <div class="tabBody hidden" id="tab-notes"><table class="ntable" id="notesTable"></table></div>
+      <div class="tabBody hidden" id="tab-log"><div id="logList"></div></div>
+    </div>
+  </aside>
+</main>
+
+<footer>Un omaggio investigativo · 6 sospetti · 6 armi · 9 stanze · un solo colpevole — fatto con ♥ in un unico HTML</footer>
+
+<!-- ═══ OVERLAYS ═══ -->
+<div class="overlay show" id="ovSetup"><div class="sheet">
+  <h2>Delitto a <span class="accent">Villa Nera</span></h2>
+  <p class="sub">Il Conte Nero è stato assassinato stanotte. Sei sospetti, sei armi, nove stanze.
+  Scopri <b>chi</b>, <b>con cosa</b> e <b>dove</b> prima degli altri investigatori… o resta al buio per sempre.</p>
+  <label class="fl">Il tuo nome</label>
+  <input type="text" id="inName" maxlength="14" value="Detective" placeholder="Es. Poirot">
+  <label class="fl">Scegli il tuo sospetto (pedina)</label>
+  <div id="setupPawns"></div>
+  <label class="fl">Investigatori al tavolo (tu + IA)</label>
+  <div class="optGrid" id="setupCount">
+    <div class="pick" data-n="3">👥<b>3</b><small>tu + 2 IA · veloce</small></div>
+    <div class="pick sel" data-n="4">👥👥<b>4</b><small>tu + 3 IA · classica</small></div>
+    <div class="pick" data-n="5">👥👥👥<b>5</b><small>tu + 4 IA · lunga</small></div>
+  </div>
+  <div class="rowBtns"><button class="btn gold" id="btnStart">🔍 Inizia l'indagine</button></div>
+</div></div>
+
+<div class="overlay" id="ovModal"><div class="sheet" id="modalBox"></div></div>
+
+<div class="overlay" id="ovHelp"><div class="sheet">
+  <h2>📖 Regole <span class="accent">& Asset</span></h2>
+  <p class="sub">Come si gioca</p>
+  <div style="font-size:13.5px;line-height:1.65">
+    🎲 <b>Tira i dadi</b> e muoviti: le caselle <b>dorate pulsanti</b> sono le mete raggiungibili.
+    Entra nelle stanze dalle <b>porte oro tratteggiate</b>.<br>
+    💡 <b>Ipotesi:</b> se sei in una stanza, ipotizza sospetto + arma <i>in quella stanza</i>.
+    Il sospettato viene trascinato lì! Gli altri, in ordine, devono mostrarti una carta per smentirti.<br>
+    🚪 <b>Passaggi segreti:</b> Cucina ⇄ Studio · Serra ⇄ Salotto (senza dadi).<br>
+    ⚖️ <b>Accusa finale:</b> quando sei certo, accusa (pulsante rosso). Se indovini <b>vinci</b>,
+    se sbagli sei <b>eliminato</b> (ma le tue carte restano in gioco).<br>
+    📓 Usa il <b>Taccuino</b>: ✅ = carta esclusa · 📌 = sospetta · ❔ = ignota. Le tue carte e quelle viste si segnano da sole.<br>
+    🤖 Le IA deducono davvero: se un'IA accusa correttamente, <b>perdi</b>. Sii più veloce!
+  </div>
+  <details class="assets"><summary>🎨 Guida asset con Gemini (clicca)</summary>
+    <p>Il gioco mostra già emoji/portrait eleganti. Per gli asset AI:</p>
+    <ol>
+      <li>Crea la cartella <code>assets/</code> accanto a questo file.</li>
+      <li>Genera con Gemini le immagini con questi <b>nomi esatti</b> (stile: <i>noir art-deco, dark academia, oro e verde, luce cinematografica, no text</i>):<br>
+      <code>suspect-rosso/senape/bianca/verdi/pavone/prugna.jpg</code> (ritratti 1:1)<br>
+      <code>weapon-candelabro/pugnale/tubo/pistola/corda/chiave.jpg</code> (oggetti 1:1)<br>
+      <code>room-cucina/ballo/serra/pranzo/biliardo/biblioteca/salotto/ingresso/studio.jpg</code> (interni 16:9)<br>
+      <code>logo.jpg</code> · <code>card-back.jpg</code> (opzionali)</li>
+      <li>Ricarica la pagina: le immagini appaiono da sole. Oppure usa <b>Importa i tuoi asset</b> qui sotto (abbinamento automatico dal nome file).</li>
+    </ol>
+    <div class="rowBtns">
+      <button class="btn" id="btnImport">📤 Importa i tuoi asset</button>
+      <input type="file" id="fileAssets" accept="image/*" multiple class="hidden">
+    </div>
+  </details>
+  <div class="rowBtns"><button class="btn gold" id="btnCloseHelp">Chiudi</button></div>
+</div></div>
+
+<div id="toasts"></div>
+
+<script>
+"use strict";
+/* ═══════════════ 1. ASSET (punta a assets/ · fallback automatico) ═══════════════ */
+const ASSETS = {
+  logo:"assets/logo.jpg", cardBack:"assets/card-back.jpg", boardTex:"assets/board-texture.jpg",
+  suspect:{rosso:"assets/suspect-rosso.jpg",senape:"assets/suspect-senape.jpg",bianca:"assets/suspect-bianca.jpg",verdi:"assets/suspect-verdi.jpg",pavone:"assets/suspect-pavone.jpg",prugna:"assets/suspect-prugna.jpg"},
+  weapon:{candelabro:"assets/weapon-candelabro.jpg",pugnale:"assets/weapon-pugnale.jpg",tubo:"assets/weapon-tubo.jpg",pistola:"assets/weapon-pistola.jpg",corda:"assets/weapon-corda.jpg",chiave:"assets/weapon-chiave.jpg"},
+  room:{cucina:"assets/room-cucina.jpg",ballo:"assets/room-ballo.jpg",serra:"assets/room-serra.jpg",pranzo:"assets/room-pranzo.jpg",biliardo:"assets/room-biliardo.jpg",biblioteca:"assets/room-biblioteca.jpg",salotto:"assets/room-salotto.jpg",ingresso:"assets/room-ingresso.jpg",studio:"assets/room-studio.jpg"}
+};
+const ASSET_OVR = {}; // riempito da "Importa asset": nome-file → objectURL
+const ASSET_VER="3"; // alza per forzare il ricaricamento delle immagini nei browser
+function assetSrc(kind,key){ let r = ASSET_OVR[(kind||"")+"-"+(key||"")];
+  if(!r){
+    if(kind==="logo") r=ASSETS.logo; else if(kind==="cardBack") r=ASSETS.cardBack;
+    else if(kind==="boardTex") r=ASSETS.boardTex;
+    else r=(ASSETS[kind]||{})[key] || "";
+  }
+  if(r&&!r.startsWith("data:")&&!r.startsWith("blob:")) r+="?v="+ASSET_VER;
+  return r; }
+function imgTag(kind,key,alt){ const s=assetSrc(kind,key);
+  return s?`<img src="${s}" alt="${alt||""}" loading="lazy" onerror="this.remove()">`:""; }
+
+/* ═══════════════ 2. DATI ═══════════════ */
+const SUSPECTS=[
+ {id:"rosso", name:"Amelia Rosso",   title:"la femme fatale",      c1:"#c0392b",c2:"#7a1f18",emoji:"👩‍🦰"},
+ {id:"senape",name:"Col. Senape",    title:"il colonnello",        c1:"#d9a21b",c2:"#7a5a08",emoji:"🧔‍♂️"},
+ {id:"bianca",name:"Dott.ssa Bianca",title:"la governante",        c1:"#b9c2cc",c2:"#5d6a78",emoji:"👵"},
+ {id:"verdi", name:"Rev. Verdi",     title:"il reverendo",         c1:"#2e9e5b",c2:"#155c31",emoji:"🧑‍🦳"},
+ {id:"pavone",name:"Cont. Pavone",   title:"la contessa",          c1:"#2f6fd0",c2:"#173a75",emoji:"👸"},
+ {id:"prugna",name:"Prof. Prugna",   title:"il professore",        c1:"#8e44ad",c2:"#4a235a",emoji:"🧑‍🏫"}
+];
+const WEAPONS=[
+ {id:"candelabro",name:"Candelabro",     emoji:"🕯️"},
+ {id:"pugnale",   name:"Pugnale",        emoji:"🗡️"},
+ {id:"tubo",      name:"Tubo di piombo", emoji:"🔩"},
+ {id:"pistola",   name:"Pistola",        emoji:"🔫"},
+ {id:"corda",     name:"Corda",          emoji:"🪢"},
+ {id:"chiave",    name:"Chiave inglese", emoji:"🔧"}
+];
+const ROOMS=[
+ {id:"cucina",   name:"Cucina",        icon:"🍳", x0:0, y0:0, x1:5,  y1:5,  bg:"#7a4a2b", doors:[[2,6],[6,2]],  passage:"studio"},
+ {id:"ballo",    name:"Sala da Ballo", icon:"💃", x0:9, y0:0, x1:14, y1:6,  bg:"#8a4a63", doors:[[11,7],[8,3],[15,3]]},
+ {id:"serra",    name:"Serra",         icon:"🌿", x0:19,y0:0, x1:23, y1:4,  bg:"#2e6b46", doors:[[19,5],[18,2]], passage:"salotto"},
+ {id:"pranzo",   name:"Sala da Pranzo",icon:"🍷", x0:0, y0:9, x1:5,  y1:15, bg:"#6e2a33", doors:[[6,10],[3,8],[3,16]]},
+ {id:"biliardo", name:"Sala Biliardo", icon:"🎱", x0:9, y0:9, x1:14, y1:14, bg:"#1f5c4d", doors:[[9,8],[14,15],[8,12],[15,12]]},
+ {id:"biblioteca",name:"Biblioteca",   icon:"📚", x0:18,y0:8, x1:23, y1:15, bg:"#5d4426", doors:[[17,10],[20,7],[20,16]]},
+ {id:"salotto",  name:"Salotto",       icon:"🛋️", x0:0, y0:18,x1:5,  y1:23, bg:"#33507a", doors:[[2,17],[6,20]],passage:"serra"},
+ {id:"ingresso", name:"Ingresso",      icon:"🚪", x0:9, y0:18,x1:14, y1:23, bg:"#4a4a55", doors:[[11,17],[8,20],[15,20]]},
+ {id:"studio",   name:"Studio",        icon:"🕰️", x0:18,y0:18,x1:23, y1:23, bg:"#5a3a72", doors:[[20,17],[17,20]],passage:"cucina"}
+];
+const STARTS={rosso:[7,1],senape:[16,1],bianca:[23,6],verdi:[7,23],pavone:[16,23],prugna:[0,16]};
+const N=24, DICE_FACES=["⚀","⚁","⚂","⚃","⚄","⚅"];
+const AI_NAMES=["Miss Marple","Sherlock","Poirot","Colombo","Jessica","Nero Wolfe"];
+const $=id=>document.getElementById(id);
+
+/* ═══════════════ 3. AUDIO (WebAudio, nessun file) ═══════════════ */
+let soundOn=true, AC=null;
+function beep(f,d,type,g){ if(!soundOn) return; try{
+  AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+  const o=AC.createOscillator(),v=AC.createGain();
+  o.type=type||"sine";o.frequency.value=f;v.gain.value=g||.12;
+  o.connect(v);v.connect(AC.destination);o.start();
+  v.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+d);
+  o.stop(AC.currentTime+d);}catch(e){} }
+const sfx={ dice(){[0,1,2,3,4].forEach(i=>setTimeout(()=>beep(200+Math.random()*400,.07,"square",.05),i*70));},
+ step(){beep(520,.08,"triangle",.08);}, door(){beep(330,.15,"sine",.1);setTimeout(()=>beep(495,.2,"sine",.1),120);},
+ card(){beep(700,.1,"triangle",.1);setTimeout(()=>beep(900,.12,"triangle",.08),90);},
+ bad(){beep(220,.3,"sawtooth",.1);setTimeout(()=>beep(150,.4,"sawtooth",.1),200);},
+ win(){[523,659,784,1046,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,.25,"triangle",.12),i*160));},
+ click(){beep(600,.05,"sine",.05);} };
+
+/* ═══════════════ 4. STATO ═══════════════ */
+let G=null;
+function cardName(id){ const[t,k]=id.split(":");
+  if(t==="s")return SUSPECTS.find(s=>s.id===k).name;
+  if(t==="w")return WEAPONS.find(s=>s.id===k).name;
+  return ROOMS.find(s=>s.id===k).name; }
+function cardEmoji(id){ const[t,k]=id.split(":");
+  if(t==="s")return SUSPECTS.find(s=>s.id===k).emoji;
+  if(t==="w")return WEAPONS.find(s=>s.id===k).emoji;
+  return ROOMS.find(s=>s.id===k).icon; }
+function cardKind(id){return id.split(":")[0];} // s|w|r
+function roomOf(x,y){ for(const r of ROOMS) if(x>=r.x0&&x<=r.x1&&y>=r.y0&&y<=r.y1) return r; return null; }
+function doorRoom(x,y){ for(const r of ROOMS) for(const[dx,dy]of r.doors) if(dx===x&&dy===y) return r; return null; }
+function walkable(x,y){ return x>=0&&y>=0&&x<N&&y<N&&!roomOf(x,y); }
+const key=(x,y)=>x+","+y;
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+/* ═══════════════ 5. BOARD ═══════════════ */
+function buildBoard(){
+  const c=$("cells");c.innerHTML="";
+  const doorSet=new Set(); ROOMS.forEach(r=>r.doors.forEach(d=>doorSet.add(key(d[0],d[1]))));
+  const startSet=new Set(Object.values(STARTS).map(p=>key(p[0],p[1])));
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+    const d=document.createElement("div");d.className="cell";d.dataset.x=x;d.dataset.y=y;
+    const r=roomOf(x,y);
+    if(r){d.classList.add("room");d.style.background=`linear-gradient(160deg,${r.bg},${r.bg}88 60%,#00000066)`;}
+    if(doorSet.has(key(x,y))){d.classList.add("door");const rr=doorRoom(x,y);d.dataset.door=rr.id;d.title="Porta: "+rr.name;}
+    if(startSet.has(key(x,y))){d.classList.add("start");
+      const sid=Object.keys(STARTS).find(k=>STARTS[k][0]===x&&STARTS[k][1]===y);
+      const s=SUSPECTS.find(s=>s.id===sid);d.style.setProperty("--sc",s.c1);}
+    d.addEventListener("click",()=>onCellClick(x,y));
+    c.appendChild(d);
+  }
+  const rl=$("roomLabels");rl.innerHTML="";
+  for(const r of ROOMS){
+    const L=document.createElement("div");L.className="roomLabel";
+    L.style.left=((r.x0)/N*100)+"%";L.style.top=((r.y0)/N*100)+"%";
+    L.style.width=((r.x1-r.x0+1)/N*100)+"%";L.style.height=((r.y1-r.y0+1)/N*100)+"%";
+    L.innerHTML=`${imgTag("room",r.id,r.name)}<div class="rico">${r.icon}</div><div class="rname">${r.name}</div>`;
+    rl.appendChild(L);
+  }
+  $("boardLegend").innerHTML=SUSPECTS.map(s=>
+    `<span class="chip"><span class="dot" style="background:radial-gradient(circle at 30% 30%,${s.c1},${s.c2})">${s.name[0]}</span>${s.name}</span>`).join("")
+    +`<span class="chip">🚪 porta</span><span class="chip">✨ tua meta</span>`;
+  const lg=assetSrc("logo"); if(lg) $("logoBox").innerHTML=`<img src="${lg}" alt="logo" onerror="this.outerHTML='🕵️'">`;
+  fitBoard(); // adatta il tabellone alla finestra (desktop)
+  const bt=assetSrc("boardTex");
+  if(bt){const im=new Image();im.onload=()=>{const b=$("board");b.style.backgroundImage=`url("${bt}")`;b.style.backgroundSize="cover";b.style.backgroundPosition="center";};im.src=bt;}
+}
+/* Il tabellone occupa al massimo lo spazio visibile: su desktop la pagina non scorre */
+function fitBoard(){ const b=$("board"); if(!b||!b.isConnected) return;
+  if(window.innerWidth<=1050){b.style.width="";return;}
+  const wrap=$("boardWrap");
+  const top=wrap.getBoundingClientRect().top;
+  const head=$("boardHead").offsetHeight, leg=$("boardLegend").offsetHeight;
+  const availH=window.innerHeight-top-head-leg-48;
+  const availW=wrap.clientWidth-28;
+  b.style.width=Math.max(260,Math.min(availW,availH))+"px";
+}
+window.addEventListener("resize",()=>{try{fitBoard();}catch(e){}});
+function cellEl(x,y){return $("cells").children[y*N+x];}
+function renderPawns(){
+  const P=$("pawns");P.innerHTML="";
+  const byRoom={};
+  for(const s of SUSPECTS){const p=G.pos[s.id];
+    if(p.type==="room"){(byRoom[p.room]=byRoom[p.room]||[]).push(s.id);} }
+  const byCell={};
+  for(const s of SUSPECTS){const p=G.pos[s.id];
+    if(p.type==="cell"){const k=key(p.x,p.y);(byCell[k]=byCell[k]||[]).push(s.id);} }
+  for(const s of SUSPECTS){
+    const p=G.pos[s.id];const d=document.createElement("div");d.className="pawn";
+    const pl=G.players.find(pp=>pp.suspectId===s.id);
+    if(pl&&pl.id===G.me) d.classList.add("mine");
+    if(pl&&pl.out) d.classList.add("out");
+    let cx,cy;
+    if(p.type==="room"){const r=ROOMS.find(r=>r.id===p.room);
+      const occ=byRoom[p.room];const i=occ.indexOf(s.id);
+      const off=[[-9,-6],[9,-6],[-9,8],[9,8],[0,-12],[0,12]][i%6];
+      cx=(r.x0+r.x1+1)/2/N*100+off[0]/N*10; cy=(r.y0+r.y1+1)/2/N*100+off[1]/N*10;
+    }else{const occ=byCell[key(p.x,p.y)];const i=occ.indexOf(s.id);
+      const off=[[-8,0],[8,0],[0,-8],[0,8],[0,0]][i%5]||[0,0];
+      cx=(p.x+.5)/N*100+off[0]/N*12; cy=(p.y+.5)/N*100+off[1]/N*12;
+    }
+    d.style.left=cx+"%";d.style.top=cy+"%";
+    d.innerHTML=`<div class="tok" style="--c1:${s.c1};--c2:${s.c2}">${imgTag("suspect",s.id,s.name)}<span>${s.name[0]}</span></div><div class="pname">${s.emoji} ${s.name}</div>`;
+    P.appendChild(d);
+  }
+}
+function paintReach(){
+  document.querySelectorAll(".cell.reachable").forEach(e=>e.classList.remove("reachable"));
+  if(!G||!G.reach) return;
+  for(const k of G.reach.keys()){const[x,y]=k.split(",").map(Number);cellEl(x,y).classList.add("reachable");}
+}
+
+/* ═══════════════ 6. MOVIMENTO (BFS) ═══════════════ */
+function computeReach(){
+  const me=G.players[G.turnIdx];const p=G.pos[me.suspectId];
+  const starts=p.type==="room"?ROOMS.find(r=>r.id===p.room).doors.map(d=>({x:d[0],y:d[1]})):[{x:p.x,y:p.y}];
+  const dist=new Map();const q=[];
+  for(const s of starts){const k=key(s.x,s.y);if(!dist.has(k)){dist.set(k,0);q.push({...s,d:0});}}
+  if(p.type==="cell") dist.delete(key(p.x,p.y)); // resta = bottone, non casella
+  while(q.length){const c=q.shift();if(c.d>=G.dice)continue;
+    for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){
+      const nx=c.x+dx,ny=c.y+dy,k=key(nx,ny);
+      if(!walkable(nx,ny)||dist.has(k))continue;
+      dist.set(k,c.d+1);q.push({x:nx,y:ny,d:c.d+1});
+    }}
+  return dist;
+}
+function roomDist(fromCell,room){
+  // BFS distanza minima dalla casella a una porta della stanza
+  const seen=new Set([key(fromCell.x,fromCell.y)]);const q=[{...fromCell,d:0}];
+  const targets=new Set(room.doors.map(d=>key(d[0],d[1])));
+  while(q.length){const c=q.shift();if(targets.has(key(c.x,c.y)))return c.d;
+    for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=c.x+dx,ny=c.y+dy,k=key(nx,ny);
+      if(nx<0||ny<0||nx>=N||ny>=N||seen.has(k))continue;
+      const r=roomOf(nx,ny); if(r&&r.id!==room.id)continue;
+      seen.add(k);q.push({x:nx,y:ny,d:c.d+1});}}
+  return 99;
+}
+function pawnCell(suspectId){
+  const p=G.pos[suspectId];
+  if(p.type==="room"){const r=ROOMS.find(r=>r.id===p.room);return{x:Math.round((r.x0+r.x1)/2),y:r.y1+1};}
+  return{x:p.x,y:p.y};
+}
+
+/* ═══════════════ 7. NUOVA PARTITA ═══════════════ */
+function newGame(){
+  const name=($("inName").value||"Detective").slice(0,14);
+  const mySus=G?G.mySus:$("setupPawns").dataset.sel||"rosso";
+  const n=G?G.nPlayers:parseInt(document.querySelector("#setupCount .pick.sel").dataset.n);
+  const others=shuffle(SUSPECTS.filter(s=>s.id!==mySus)).slice(0,n-1);
+  const players=[{id:0,name,suspectId:mySus,isAI:false,hand:[],out:false,seen:new Set()}];
+  const aiPool=shuffle(AI_NAMES);
+  others.forEach((s,i)=>players.push({id:i+1,name:aiPool[i%aiPool.length]+" · "+s.name.split(" ").pop(),suspectId:s.id,isAI:true,hand:[],out:false,seen:new Set()}));
+  // busta + distribuzione
+  const es=rnd(SUSPECTS).id, ew=rnd(WEAPONS).id, er=rnd(ROOMS).id;
+  let deck=shuffle([...SUSPECTS.map(s=>"s:"+s.id),...WEAPONS.map(w=>"w:"+w.id),...ROOMS.map(r=>"r:"+r.id)]
+    .filter(c=>c!==`s:${es}`&&c!==`w:${ew}`&&c!==`r:${er}`));
+  players.forEach((p,i)=>{p.hand=deck.filter((_,j)=>j%players.length===i);p.seen=new Set(p.hand);});
+  const pos={};SUSPECTS.forEach(s=>{const st=STARTS[s.id];pos[s.id]={type:"cell",x:st[0],y:st[1]};});
+  G={players,envelope:{s:es,w:ew,r:er},pos,turnIdx:Math.floor(Math.random()*players.length),
+     dice:0,phase:"roll",reach:null,moved:false,suggested:false,me:0,mySus,nPlayers:n,
+     notes:{},turnCount:1,t0:Date.now(),suggCount:0,over:false,fast:false};
+  players[0].hand.forEach(c=>G.notes[c]="yes");
+  $("ovSetup").classList.remove("show");
+  buildBoard();renderAll();
+  log(`🌙 Notte fonda a <b>Villa Nera</b>… il Conte Nero è stato trovato morto.`,`Liberi in tavola: ${players.map(p=>p.name).join(", ")}.`);
+  log(`✉️ La <b>busta top-secret</b> custodisce la verità. Buona caccia, ${name}!`);
+  toast("🔍 Le indagini cominciano!");
+  startTurn();
+}
+function activeTurnPlayers(){return G.players.filter(p=>!p.out);}
+function cur(){return G.players[G.turnIdx];}
+
+/* ═══════════════ 8. TURNI ═══════════════ */
+function startTurn(){
+  if(G.over)return;
+  const p=cur();
+  if(p.out){return nextTurn();}
+  G.phase="roll";G.moved=false;G.suggested=false;G.reach=null;G.dice=0;
+  renderAll();
+  if(p.isAI){aiTurn(p);}else{
+    setStatus(`🎲 Tocca a te, <b>${p.name}</b>!`,`Tira i dadi e muoviti verso una stanza. Caselle <b>dorate</b> = mete possibili.`);
+    setActions([{t:"🎲 Tira i dadi",c:"gold",fn:rollDice}]);
+  }
+}
+function nextTurn(){
+  if(G.over)return;
+  G.turnIdx=(G.turnIdx+1)%G.players.length;
+  if(G.turnIdx===0)G.turnCount++;
+  if(activeTurnPlayers().length===1&&!G.over){
+    const last=activeTurnPlayers()[0];
+    if(!last.isAI){startTurn();return;} // il giocatore rimasto solo continua a indagare
+  }
+  if(activeTurnPlayers().length===0){return gameOver(null,"Tutti eliminati! La verità resta sepolta…");}
+  startTurn();
+}
+function rollDice(){
+  if(G.phase!=="roll")return;
+  sfx.dice();
+  const d1=$("die1"),d2=$("die2");d1.classList.add("rolling");d2.classList.add("rolling");
+  let ticks=0;const iv=setInterval(()=>{
+    d1.textContent=rnd(DICE_FACES);d2.textContent=rnd(DICE_FACES);
+    if(++ticks>7){clearInterval(iv);d1.classList.remove("rolling");d2.classList.remove("rolling");
+      const v1=1+Math.floor(Math.random()*6),v2=1+Math.floor(Math.random()*6);
+      d1.textContent=DICE_FACES[v1-1];d2.textContent=DICE_FACES[v2-1];
+      G.dice=v1+v2;G.phase="move";G.reach=computeReach();
+      const inRoom=G.pos[cur().suspectId].type==="room"?ROOMS.find(r=>r.id===G.pos[cur().suspectId].room):null;
+      sfx.step();
+      if(!G.reach.size&&!inRoom){setStatus(`🎲 Hai fatto <b>${G.dice}</b>`,`Nessuna meta raggiungibile. Tocca a qualcun altro…`);setActions([{t:"⏭ Passa",c:"",fn:()=>{G.phase="action";endPlayerTurn();}}]);renderAll();return;}
+      setStatus(`🎲 Hai fatto <b>${G.dice}</b>`,`Clicca una casella <b>dorata</b> per muoverti${inRoom?`, oppure <b>resta in ${inRoom.name}</b>`:""}. Le <b>porte oro</b> ti fanno entrare.`);
+      const acts=[];
+      if(inRoom){acts.push({t:`🏠 Resta in ${inRoom.name}`,c:"",fn:stayInRoom});
+        const pr=ROOMS.find(r=>r.id===inRoom.passage);
+        if(inRoom.passage)acts.push({t:`🚇 Passaggio segreto → ${pr.name}`,c:"gold",fn:()=>usePassage(inRoom)});}
+      acts.push({t:"⚖️ Accusa finale…",c:"danger",fn:openAccuse});
+      setActions(acts);renderAll();}
+  },90);
+}
+function stayInRoom(){sfx.click();G.moved=true;G.phase="action";afterMove();}
+function usePassage(room){
+  const dest=ROOMS.find(r=>r.id===room.passage);
+  G.pos[cur().suspectId]={type:"room",room:dest.id};
+  sfx.door();toast(`🚇 Passaggio segreto → ${dest.name}!`);log(`🚇 <b>${cur().name}</b> usa il passaggio segreto → <b>${dest.name}</b>.`);
+  G.moved=true;G.phase="action";G.reach=null;afterMove();
+}
+function onCellClick(x,y){
+  if(G.over||G.phase!=="move"||cur().isAI)return;
+  const k=key(x,y);if(!G.reach||!G.reach.has(k))return;
+  const dr=doorRoom(x,y);
+  if(dr){G.pos[cur().suspectId]={type:"room",room:dr.id};sfx.door();toast(`🚪 Entri in ${dr.name} ${dr.icon}`);}
+  else{G.pos[cur().suspectId]={type:"cell",x,y};sfx.step();}
+  G.moved=true;G.phase="action";G.reach=null;afterMove();
+}
+function afterMove(){
+  const p=cur();const pos=G.pos[p.suspectId];
+  const inRoom=pos.type==="room"?ROOMS.find(r=>r.id===pos.room):null;
+  renderAll();
+  if(p.isAI)return; // l'IA gestisce da sé
+  if(inRoom){
+    setStatus(`🚪 Sei in <b>${inRoom.name}</b> ${inRoom.icon}`,
+      `Fai un'<b>ipotesi</b> in questa stanza, usa il passaggio${inRoom.passage?" o":""} muoviti di nuovo… no, una mossa sola! Oppure <b>accusa</b>.`);
+    const acts=[{t:`💡 Ipotesi in ${inRoom.name}`,c:"gold",fn:openSuggest}];
+    if(inRoom.passage){const pr=ROOMS.find(r=>r.id===inRoom.passage);acts.push({t:`🚇 → ${pr.name}`,c:"",fn:()=>usePassage(inRoom)});}
+    acts.push({t:"⚖️ Accusa finale…",c:"danger",fn:openAccuse});
+    acts.push({t:"⏭ Termina turno",c:"",fn:endPlayerTurn});
+    setActions(acts);
+  }else{
+    setStatus(`🚶 Ti sei mosso.` ,`Non sei in una stanza: puoi solo <b>accusare</b> o passare.`);
+    setActions([{t:"⚖️ Accusa finale…",c:"danger",fn:openAccuse},{t:"⏭ Termina turno",c:"",fn:endPlayerTurn}]);
+  }
+}
+function endPlayerTurn(){ if(G.over)return; sfx.click(); log(`⏭ <b>${cur().name}</b> termina il turno.`); nextTurn(); }
+
+/* ═══════════════ 9. IPOTESI & SMENTITE ═══════════════ */
+function openSuggest(){
+  const pos=G.pos[cur().suspectId];if(pos.type!=="room")return;
+  const room=ROOMS.find(r=>r.id===pos.room);
+  openModal(`💡 Ipotesi — <span class="accent">${room.name}</span>
+    <p class="sub">«Propongo che il delitto in <b>${room.name}</b> sia opera di…» (la stanza è fissa: sei qui!)</p>
+    <label class="fl">Sospetto</label><select id="sgS">${SUSPECTS.map(s=>`<option value="${s.id}">${s.emoji} ${s.name}</option>`).join("")}</select>
+    <label class="fl">Arma</label><select id="sgW">${WEAPONS.map(w=>`<option value="${w.id}">${w.emoji} ${w.name}</option>`).join("")}</select>
+    <div class="rowBtns"><button class="btn" onclick="closeModal()">Annulla</button>
+    <button class="btn gold" onclick="confirmSuggest()">🗣️ Lancia l'ipotesi</button></div>`);
+}
+function confirmSuggest(){
+  const s=$("sgS").value,w=$("sgW").value;
+  const room=G.pos[cur().suspectId].room;
+  closeModal();doSuggestion(cur(),s,w,room);
+}
+async function doSuggestion(suggester,sid,wid,rid){
+  G.suggCount++;
+  const S_=SUSPECTS.find(s=>s.id===sid),W=WEAPONS.find(w=>w.id===wid),R=ROOMS.find(r=>r.id===rid);
+  G.pos[sid]={type:"room",room:rid}; // il sospettato viene trascinato nella stanza!
+  renderPawns();sfx.card();
+  log(`💡 <b>${suggester.name}</b> ipotizza: <b>${S_.name}</b> con <b>${W.name}</b> in <b>${R.name}</b>.`);
+  toast(`💡 Ipotesi: ${S_.name} · ${W.name} · ${R.name}`);
+  await wait(G.fast?250:900);
+  const want=[`s:${sid}`,`w:${wid}`,`r:${rid}`];
+  const order=[];const si=G.players.indexOf(suggester);
+  for(let i=1;i<=G.players.length;i++)order.push(G.players[(si+i)%G.players.length]);
+  let shown=null,shower=null;
+  for(const p of order){
+    const has=p.hand.filter(c=>want.includes(c));
+    if(has.length){
+      shower=p;
+      if(p.isAI){shown=rnd(has);}
+      else{
+        if(suggester.isAI){shown=await playerChoosesCard(p,suggester,has);} // il giocatore sceglie cosa mostrare
+        else{shown=has[0];} // non succede mai (suggester=giocatore, p=giocatore)
+      }
+      break;
+    }
+  }
+  if(!shown){
+    log(`😶 <b>Nessuno può smentire!</b> Forse ci sei vicino… <small>(nessuna di queste 3 carte è in mano agli altri)</small>`);
+    toast("😶 Nessuno smentisce!");
+    if(suggester.isAI){/* l'IA registra il vuoto */}
+    else openModal(`😶 <span class="accent">Nessuno smentisce!</span>
+      <p class="sub">Ottimo segno: queste carte potrebbero essere nella busta… o in mano a chi è uscito. Segnale sul taccuino!</p>
+      <div class="rowBtns"><button class="btn gold" onclick="closeModal()">Capito!</button></div>`);
+  }else if(suggester.isAI&&shower.isAI){
+    suggester.seen.add(shown);
+    log(`🤫 <b>${shower.name}</b> mostra <b>in segreto</b> una carta a <b>${suggester.name}</b>.`,"","secret");
+  }else if(suggester.isAI&&!shower.isAI){
+    suggester.seen.add(shown);
+    log(`🤫 Hai mostrato una carta a <b>${suggester.name}</b> (resta segreta agli altri).`,"","secret");
+  }else if(!suggester.isAI&&shower.isAI){
+    suggester.seen.add(shown);G.notes[shown]="yes";
+    sfx.card();
+    log(`🃏 <b>${shower.name}</b> ti mostra una carta…`,"","good");
+    openModal(`🃏 <span class="accent">${shower.name}</span> ti mostra:
+      <div class="revealCard"><div class="art">${imgTag(cardKind(shown)==="s"?"suspect":cardKind(shown)==="w"?"weapon":"room",shown.split(":")[1])}${cardEmoji(shown)}</div>
+      <div><b style="font-size:18px">${cardName(shown)}</b><br><span style="color:var(--muted);font-size:13px">${shown.startsWith("s:")?"Sospetto · non è nella busta":shown.startsWith("w:")?"Arma · non è nella busta":"Stanza · non è nella busta"}</span><br>
+      <small style="color:var(--muted)">Segnata ✅ sul taccuino.</small></div></div>
+      <div class="rowBtns"><button class="btn gold" onclick="closeModal()">Annotato! 📓</button></div>`);
+  }
+  renderAll();
+  await wait(G.fast?250:600);
+  if(suggester.isAI){aiAfterSuggest(suggester);}else if(!G.over){afterMoveRefresh();}
+}
+function afterMoveRefresh(){ // dopo ipotesi del giocatore: solo accusa o fine turno
+  if(G.over||cur().isAI)return;
+  const pos=G.pos[cur().suspectId];const inRoom=pos.type==="room"?ROOMS.find(r=>r.id===pos.room):null;
+  setStatus(inRoom?`🚪 Sei in <b>${inRoom.name}</b> ${inRoom.icon}`:`🚶 Turno in corso`,
+    `Ipotesi fatta. Ora puoi <b>accusare</b> o terminare il turno.`);
+  setActions([{t:"⚖️ Accusa finale…",c:"danger",fn:openAccuse},{t:"⏭ Termina turno",c:"",fn:endPlayerTurn}]);
+}
+function playerChoosesCard(player,toAI,has){
+  return new Promise(res=>{
+    openModal(`🙈 <span class="accent">${toAI.name}</span> ti chiama in causa!
+      <p class="sub">Ha ipotizzato una combinazione e <b>tu puoi smentirla</b>. Scegli quale carta mostrare (la vedrà solo ${toAI.name}):</p>
+">${has.map(c=>{const kk=c.split(":");const kind=kk[0]==="s"?"suspect":kk[0]==="w"?"weapon":"room";return `<div class="revealCard"><div class="art">${imgTag(kind,kk[1])}${cardEmoji(c)}</div>
+        <div><b>${cardName(c)}</b></div><div class="hdr-sp"></div>
+        <button class="btn gold" data-c="${c}">Mostra</button></div>`;}).join("")}`);
+    document.querySelectorAll("#modalBox [data-c]").forEach(b=>b.onclick=()=>{closeModal();sfx.card();res(b.dataset.c);});
+  });
+}
+
+/* ═══════════════ 10. ACCUSA ═══════════════ */
+function openAccuse(){
+  openModal(`⚖️ <span class="accent">Accusa finale</span>
+    <p class="sub">⚠️ <b>Attenzione:</b> se indovini <b style="color:#7ee2a8">VINCI subito</b>, se sbagli sei <b style="color:#ff8f8a">ELIMINATO</b>. Accusa solo quando sei quasi certo!</p>
+    <label class="fl">Chi?</label><select id="acS">${SUSPECTS.map(s=>`<option value="${s.id}">${s.emoji} ${s.name}</option>`).join("")}</select>
+    <label class="fl">Con cosa?</label><select id="acW">${WEAPONS.map(w=>`<option value="${w.id}">${w.emoji} ${w.name}</option>`).join("")}</select>
+    <label class="fl">Dove?</label><select id="acR">${ROOMS.map(r=>`<option value="${r.id}">${r.icon} ${r.name}</option>`).join("")}</select>
+    <div class="rowBtns"><button class="btn" onclick="closeModal()">Ci ripenso</button>
+    <button class="btn danger" onclick="confirmAccuse()">⚖️ ACCUSO!</button></div>`);
+}
+function confirmAccuse(){
+  const s=$("acS").value,w=$("acW").value,r=$("acR").value;
+  closeModal();doAccuse(cur(),s,w,r);
+}
+function doAccuse(p,sid,wid,rid){
+  const ok=sid===G.envelope.s&&wid===G.envelope.w&&rid===G.envelope.r;
+  const S_=SUSPECTS.find(s=>s.id===sid),W=WEAPONS.find(w=>w.id===wid),R=ROOMS.find(r=>r.id===rid);
+  if(ok){gameOver(p,`🎯 <b>${p.name}</b> accusa: <b>${S_.name}</b> con <b>${W.name}</b> in <b>${R.name}</b>… <b>COLPEVOLE!</b>`);}
+  else{
+    sfx.bad();p.out=true;
+    const hand=p.hand.map(cardName).join(", ");
+    log(`❌ <b>${p.name}</b> accusa <b>${S_.name} · ${W.name} · ${R.name}</b>… <b>SBAGLIATO!</b> ${p.isAI?"L'investigatore lascia il caso.":"Sei eliminato, ma puoi guardare gli altri finire…"} <small>Le sue carte (${hand}) restano visibili per le smentite.</small>`,"","bad");
+    toast(`❌ ${p.name} eliminato!`);
+    renderAll();
+    if(!p.isAI){ // spettatore: le IA giocano da sole in veloce
+      G.fast=true;
+      openModal(`💀 <span class="accent">Eliminato!</span>
+        <p class="sub">Brutta accusa, detective… Ma lo spettacolo continua: guarda le IA darsi battaglia in <b>modalità rapida</b>, oppure inizia una nuova partita.</p>
+        <div class="rowBtns"><button class="btn gold" onclick="closeModal()">👀 Guarda il finale</button>
+        <button class="btn" onclick="location.reload()">↺ Nuova partita</button></div>`);
+    }
+    const rest=activeTurnPlayers();
+    if(rest.length===1&&rest[0].isAI&&p.isAI){/* continua */}
+    if(rest.length===0){gameOver(null,"Tutti eliminati!");}
+    else if(cur()===p){nextTurn();}
+    else renderAll();
+  }
+}
+
+/* ═══════════════ 11. INTELLIGENZA ARTIFICIALE ═══════════════ */
+function aiUnknown(p,cat){
+  const all=cat==="s"?SUSPECTS.map(s=>"s:"+s.id):cat==="w"?WEAPONS.map(w=>"w:"+w.id):ROOMS.map(r=>"r:"+r.id);
+  return all.filter(c=>!p.seen.has(c));
+}
+function aiConfident(p){const u={s:aiUnknown(p,"s"),w:aiUnknown(p,"w"),r:aiUnknown(p,"r")};
+  const risk=G.turnCount>=28; // dopo un po' le IA osano di più
+  const lim=risk?2:1;
+  return u.s.length<=lim&&u.w.length<=lim&&u.r.length<=lim?{s:u.s[0]||rnd(u.s),w:u.w[0]||rnd(u.w),r:u.r[0]||rnd(u.r)}:null;}
+async function aiTurn(p){
+  G.phase="ai";
+  setStatus(`🤖 <b>${p.name}</b> indaga…`,`${p.out?"(eliminato)":"Sta pensando…"}`);
+  setActions([]);renderAll();
+  await wait(G.fast?350:900);
+  if(G.over)return;
+  const conf=aiConfident(p);
+  if(conf&&Math.random()<(G.turnCount>=28?.5:.9)){
+    log(`⚖️ <b>${p.name}</b> è certo… formula l'<b>accusa finale!</b>`);
+    await wait(G.fast?300:1000);
+    doAccuse(p,conf.s.split(":")[1],conf.w.split(":")[1],conf.r.split(":")[1]);return;
+  }
+  // dadi
+  const v1=1+Math.floor(Math.random()*6),v2=1+Math.floor(Math.random()*6);
+  G.dice=v1+v2;$("die1").textContent=DICE_FACES[v1-1];$("die2").textContent=DICE_FACES[v2-1];
+  sfx.dice();log(`🎲 <b>${p.name}</b> fa <b>${G.dice}</b>.`);
+  await wait(G.fast?300:800);
+  // meta: stanza non ancora esclusa più vicina
+  const pos=G.pos[p.suspectId];const here=pos.type==="room"?pos.room:null;
+  const cell=pawnCell(p.suspectId);
+  let targets=ROOMS.filter(r=>!p.seen.has("r:"+r.id)&&r.id!==here);
+  if(!targets.length)targets=ROOMS.filter(r=>r.id!==here);
+  targets.sort((a,b)=>roomDist(cell,a)-roomDist(cell,b));
+  const goal=(here&&!p.seen.has("r:"+here))?ROOMS.find(r=>r.id===here):targets[0];
+  const dGoal=goal?roomDist(cell,goal):99;
+  if(here&&goal&&goal.id===here){
+    log(`🚪 <b>${p.name}</b> resta in <b>${goal.name}</b>.`);
+  }else if(goal&&dGoal<=G.dice){
+    G.pos[p.suspectId]={type:"room",room:goal.id};sfx.door();
+    log(`🚪 <b>${p.name}</b> entra in <b>${goal.name}</b> ${goal.icon}.`);
+  }else if(here&&ROOMS.find(r=>r.id===here).passage&&Math.random()<.6){
+    const h=ROOMS.find(r=>r.id===here),dest=ROOMS.find(r=>r.id===h.passage);
+    if(!p.seen.has("r:"+dest.id)||Math.random()<.3){G.pos[p.suspectId]={type:"room",room:dest.id};
+      log(`🚇 <b>${p.name}</b> sgattaiola nel passaggio → <b>${dest.name}</b>.`);}
+    else{ // muoviti verso la meta uscendo da una porta
+      const np=stepToward(p,goal);log(`🚶 <b>${p.name}</b> si aggira per Villa Nera…`);}
+  }else{
+    stepToward(p,goal);log(`🚶 <b>${p.name}</b> si aggira per Villa Nera…`);
+  }
+  renderPawns();await wait(G.fast?300:800);
+  const now=G.pos[p.suspectId];
+  if(now.type==="room"){
+    const us=aiUnknown(p,"s"),uw=aiUnknown(p,"w");
+    const sid=(us[0]||rnd(SUSPECTS.map(s=>"s:"+s.id))).split(":")[1];
+    const wid=(uw[0]||rnd(WEAPONS.map(w=>"w:"+w.id))).split(":")[1];
+    await doSuggestion(p,sid,wid,now.room);
+  }else{nextTurn();}
+}
+function stepToward(p,goal){
+  // esce dalla stanza (se dentro) e fa qualche passo verso la meta
+  let start;
+  const pos=G.pos[p.suspectId];
+  if(pos.type==="room"){const r=ROOMS.find(r=>r.id===pos.room);
+    r.doors.sort((a,b)=>(goal?roomDist({x:a[0],y:a[1]},goal):0)-(goal?roomDist({x:b[0],y:b[1]},goal):0));
+    start={x:r.doors[0][0],y:r.doors[0][1]};
+  }else start={x:pos.x,y:pos.y};
+  let cx=start.x,cy=start.y;
+  for(let i=0;i<G.dice;i++){
+    const opts=[[1,0],[-1,0],[0,1],[0,-1]].map(([dx,dy])=>({x:cx+dx,y:cy+dy}))
+      .filter(c=>walkable(c.x,c.y));
+    if(!opts.length)break;
+    opts.sort((a,b)=>(goal?roomDist(a,goal):0)-(goal?roomDist(b,goal):0));
+    const nx=opts[Math.random()<.75?0:Math.floor(Math.random()*opts.length)];
+    cx=nx.x;cy=nx.y;
+    const dr=doorRoom(cx,cy);
+    if(dr&&goal&&dr.id===goal.id){G.pos[p.suspectId]={type:"room",room:dr.id};sfx.door();
+      log(`🚪 <b>${p.name}</b> entra in <b>${dr.name}</b> ${dr.icon}.`);return;}
+  }
+  G.pos[p.suspectId]={type:"cell",x:cx,y:cy};
+}
+function aiAfterSuggest(p){
+  if(G.over)return;
+  const conf=aiConfident(p);
+  if(conf&&aiUnknown(p,"s").length===1&&aiUnknown(p,"w").length===1&&aiUnknown(p,"r").length===1&&Math.random()<.85){
+    log(`⚖️ <b>${p.name}</b> ha capito tutto… <b>ACCUSA!</b>`);doAccuse(p,conf.s.split(":")[1],conf.w.split(":")[1],conf.r.split(":")[1]);return;
+  }
+  nextTurn();
+}
+
+/* ═══════════════ 12. FINE PARTITA ═══════════════ */
+function gameOver(winner,headline){
+  G.over=true;G.phase="over";G.reach=null;
+  const E=G.envelope;
+  const en=`<b>${SUSPECTS.find(s=>s.id===E.s).name}</b> con <b>${WEAPONS.find(w=>w.id===E.w).name}</b> in <b>${ROOMS.find(r=>r.id===E.r).name}</b>`;
+  if(headline)log(headline,"","good");
+  log(`✉️ <b>La busta rivela:</b> ${en}.`,"","good");
+  renderAll();
+  if(winner&&!winner.isAI){sfx.win();confetti();}
+  else sfx.bad();
+  const stats=`<small style="color:var(--muted)">Turni: ${G.turnCount} · Ipotesi: ${G.suggCount} · Tempo: ${elapsed()}</small>`;
+  openModal(`${winner&&!winner.isAI?"🏆":"🔚"} <span class="accent">${winner?(winner.isAI?`${winner.name} vince!`:"HAI VINTO, detective!"):"Caso chiuso"}</span>
+    <p class="sub">${winner&&!winner.isAI?"Inchino, Sherlock. Villa Nera ti deve un favore.":winner?"L'assassino ride nell'ombra… sarai più svelto la prossima volta.":"Nessuno ha risolto il caso."}</p>
+    <div class="revealCard"><div class="art">${imgTag("cardBack")}✉️</div><div><b>La verità:</b><br>${en}</div></div>
+    ${stats}
+    <div class="rowBtns"><button class="btn gold" onclick="location.reload()">↺ Nuova indagine</button></div>`,true);
+}
+function confetti(){
+  const colors=["#d4af37","#f3d67c","#b3372f","#1f6f4a","#7aa2ff"];
+  for(let i=0;i<90;i++){const d=document.createElement("div");d.className="confetti";
+    d.style.left=Math.random()*100+"vw";d.style.background=rnd(colors);
+    d.style.width=d.style.height=(5+Math.random()*7)+"px";
+    d.style.animationDuration=(2+Math.random()*2.5)+"s";document.body.appendChild(d);
+    setTimeout(()=>d.remove(),5000);}
+}
+function elapsed(){const s=Math.floor((Date.now()-G.t0)/1000);
+  return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");}
+
+/* ═══════════════ 13. RENDER UI ═══════════════ */
+function setStatus(t,h){$("statusTitle").innerHTML=t;$("phaseHint").innerHTML=h||"";}
+function setActions(list){const r=$("actionRow");r.innerHTML="";
+  list.forEach(a=>{const b=document.createElement("button");b.className="btn "+(a.c||"");b.innerHTML=a.t;
+    b.onclick=()=>{sfx.click();a.fn();};r.appendChild(b);});}
+function toast(msg){const t=document.createElement("div");t.className="toast";t.innerHTML=msg;
+  $("toasts").appendChild(t);setTimeout(()=>{t.style.opacity="0";setTimeout(()=>t.remove(),400);},2600);}
+function log(html,sub,cls){
+  const d=document.createElement("div");d.className="log "+(cls||"");
+  d.innerHTML=html+(sub?`<br><small>${sub}</small>`:"");
+  const L=$("logList");L.prepend(d);while(L.children.length>60)L.lastChild.remove();
+}
+function cardArtHTML(id,big){
+  const[t,k]=id.split(":");const size=big?84:44;
+  const src=assetSrc(t==="s"?"suspect":t==="w"?"weapon":"room",k);
+  return `<div class="art" style="width:${size}px;height:${size}px;${big?"font-size:48px":""}">${src?`<img src="${src}" onerror="this.remove()">`:""}${cardEmoji(id)}</div>`;
+}
+function renderHand(){
+  const me=G.players[G.me];const H=$("handList");
+  H.innerHTML=me.hand.map(c=>{
+    const[t]=c.split(":");
+    const tag=t==="s"?"Sospetto":t==="w"?"Arma":"Stanza";
+    return `<div class="pcard">${cardArtHTML(c)}<div><b>${cardName(c)}</b><span>${tag} · in cassaforte finché non serve smentire</span></div></div>`;
+  }).join("")||"<p style='color:var(--muted)'>Mano vuota?</p>";
+}
+function renderNotes(){
+  const T=$("notesTable");if(!T)return;
+  const sym={yes:["✅","st-yes"],maybe:["📌","st-maybe"],no:["❌","st-no"],unk:["❔","st-unk"]};
+  const row=c=>{const v=G.notes[c]||"unk";const[s,cl]=sym[v];
+    return `<tr><td>${cardEmoji(c)} ${cardName(c)}</td><td class="nmark ${cl}" data-c="${c}">${s}</td></tr>`;};
+  T.innerHTML=`<tr class="cat"><td colspan="2">🔎 Sospetti</td></tr>`+SUSPECTS.map(s=>row("s:"+s.id)).join("")+
+    `<tr class="cat"><td colspan="2">🔪 Armi</td></tr>`+WEAPONS.map(w=>row("w:"+w.id)).join("")+
+    `<tr class="cat"><td colspan="2">🏛️ Stanze</td></tr>`+ROOMS.map(r=>row("r:"+r.id)).join("");
+  T.querySelectorAll(".nmark").forEach(m=>m.onclick=()=>{
+    const c=m.dataset.c;const order=["unk","maybe","yes","no"];
+    G.notes[c]=order[(order.indexOf(G.notes[c]||"unk")+1)%order.length];
+    sfx.click();renderNotes();});
+}
+function renderAll(){
+  if(!G)return;
+  const p=cur();
+  const dot=p?`<span class="dot" style="background:radial-gradient(circle at 30% 30%,${SUSPECTS.find(s=>s.id===p.suspectId).c1},#000)">${p.name[0]}</span>`:"";
+  $("turnBadge").innerHTML=p?`${dot} Turno di <b>${p.name}</b> ${p.out?"(eliminato)":""}`:"—";
+  renderPawns();paintReach();renderHand();renderNotes();
+}
+/* clock */
+setInterval(()=>{if(G&&!G.over)$("clock").textContent=`⏱ ${elapsed()} · Turno ${G.turnCount}`;},1000);
+
+/* ═══════════════ 14. MODALI / TABS / SETUP ═══════════════ */
+function openModal(html,lock){$("modalBox").innerHTML=html;$("ovModal").classList.add("show");$("ovModal").dataset.lock=lock?"1":"";}
+function closeModal(){if($("ovModal").dataset.lock==="1")return;$("ovModal").classList.remove("show");}
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));t.classList.add("active");
+  ["hand","notes","log"].forEach(k=>$("tab-"+k).classList.toggle("hidden",k!==t.dataset.tab));sfx.click();});
+(function initSetup(){
+  const sp=$("setupPawns");sp.dataset.sel="rosso";
+  sp.innerHTML=SUSPECTS.map(s=>`<div class="pick${s.id==="rosso"?" sel":""}" data-s="${s.id}">
+    <div class="who dot" style="width:56px;height:56px;font-size:28px;background:radial-gradient(circle at 30% 30%,${s.c1},${s.c2});position:relative;overflow:hidden">${imgTag("suspect",s.id,s.name)}${s.emoji}</div>
+    <b>${s.name}</b><small>${s.title}</small></div>`).join("");
+  sp.querySelectorAll(".pick").forEach(p=>p.onclick=()=>{sp.querySelectorAll(".pick").forEach(x=>x.classList.remove("sel"));
+    p.classList.add("sel");sp.dataset.sel=p.dataset.s;if(G)G.mySus=p.dataset.s;sfx.click();});
+  document.querySelectorAll("#setupCount .pick").forEach(p=>p.onclick=()=>{
+    document.querySelectorAll("#setupCount .pick").forEach(x=>x.classList.remove("sel"));p.classList.add("sel");sfx.click();});
+})();
+$("btnStart").onclick=()=>{sfx.click();G=null;newGame();};
+$("btnNew").onclick=()=>{if(confirm("Ricominciare l'indagine da capo?"))location.reload();};
+$("btnSound").onclick=e=>{soundOn=!soundOn;e.target.textContent=soundOn?"🔊 Audio":"🔇 Muto";if(soundOn)sfx.click();};
+$("btnHelp").onclick=()=>{$("ovHelp").classList.add("show");};
+$("btnCloseHelp").onclick=()=>{$("ovHelp").classList.remove("show");};
+$("btnImport").onclick=()=>$("fileAssets").click();
+$("fileAssets").addEventListener("change",e=>{
+  const files=[...e.target.files];let n=0;
+  const norm=s=>s.toLowerCase().replace(/[^a-z]/g,"");
+  for(const f of files){const name=norm(f.name);
+    let hit=null;
+    const cand=[...SUSPECTS.map(s=>["suspect",s.id,s.id]),...WEAPONS.map(w=>["weapon",w.id,w.id]),...ROOMS.map(r=>["room",r.id,r.id])];
+    for(const[k,id,kw]of cand){if(name.includes(norm(kw))){hit=k+"-"+id;break;}}
+    if(name.includes("logo"))hit="logo-"; if(name.includes("card")&&name.includes("back"))hit="cardBack-";
+    if(name.includes("board")||name.includes("texture"))hit="boardTex-";
+    if(hit){ASSET_OVR[hit]=URL.createObjectURL(f);n++;}
+  }
+  toast(n?`🎨 ${n} asset importati! Ritratti e stanze aggiornati.`:`⚠️ Nessun nome riconosciuto (usa es. suspect-rosso.jpg)`);
+  if(n){buildBoard();renderAll();}
+});
+buildBoard(); // anteprima del tabellone dietro il setup
+</script>
+</body>
+</html>
