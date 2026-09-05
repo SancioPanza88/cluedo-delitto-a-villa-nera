@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manuale Ufficiale — CLUEDO: Delitto a Villa Nera</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d1117; --panel:#171e28; --panel2:#1e2634;
+  --gold:#d4af37; --gold2:#f3d67c; --ink:#e9e4d6; --muted:#9aa3b2;
+  --green:#1f6f4a; --red:#b3372f; --line:#2b3444;
+  --shadow:0 10px 40px rgba(0,0,0,.55); --radius:14px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; color:var(--ink); font-family:'Inter',system-ui,sans-serif; min-height:100vh;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, rgba(212,175,55,.10), transparent 60%),
+    radial-gradient(1000px 700px at 110% 20%, rgba(31,111,74,.14), transparent 55%),
+    radial-gradient(900px 900px at 50% 120%, rgba(179,55,47,.08), transparent 60%),
+    var(--bg);
+}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.05;z-index:0;
+  background-image:repeating-linear-gradient(45deg,var(--gold) 0 1px,transparent 1px 14px),
+                   repeating-linear-gradient(-45deg,var(--gold) 0 1px,transparent 1px 14px);}
+h1,h2,h3,.serif{font-family:'Playfair Display',Georgia,serif}
+a{color:var(--gold2)}
+/* progress */
+#progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:200;
+  background:linear-gradient(90deg,var(--gold),var(--gold2));box-shadow:0 0 12px rgba(212,175,55,.8)}
+header{position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:10px 18px;border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(20,26,34,.97),rgba(13,17,23,.92));backdrop-filter:blur(8px)}
+.logo{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-size:22px;overflow:hidden;
+  background:radial-gradient(circle at 30% 30%,#2b3444,#10151d);border:2px solid var(--gold);box-shadow:0 0 18px rgba(212,175,55,.35)}
+.logo img{width:100%;height:100%;object-fit:cover}
+header h1{font-size:18px;margin:0;letter-spacing:1px}
+header h1 small{display:block;font-family:'Inter';font-size:10px;color:var(--muted);letter-spacing:3px;text-transform:uppercase}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+nav a{font-size:12px;font-weight:700;text-decoration:none;color:var(--muted);
+  border:1px solid var(--line);padding:7px 11px;border-radius:999px;transition:.15s;background:#10151d}
+nav a:hover,nav a.active{color:#1a1405;background:linear-gradient(180deg,#f0d678,#b8912a);border-color:#8a6d1f}
+.btn{display:inline-block;background:linear-gradient(180deg,#2a3342,#1a212c);color:var(--ink);
+  border:1px solid var(--line);border-radius:10px;padding:11px 18px;font-size:14px;font-weight:700;
+  cursor:pointer;transition:.15s;text-decoration:none}
+.btn:hover{border-color:var(--gold);transform:translateY(-1px)}
+.btn.gold{background:linear-gradient(180deg,#f0d678,#b8912a);color:#1a1405;border-color:#8a6d1f}
+main{max-width:1120px;margin:0 auto;padding:0 18px 60px;position:relative;z-index:1}
+/* hero */
+.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:22px;align-items:center;padding:44px 0 26px}
+@media(max-width:860px){.hero{grid-template-columns:1fr}}
+.kicker{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--gold2)}
+.hero h2{font-size:clamp(34px,6vw,62px);margin:.2em 0;line-height:1.02}
+.hero h2 .accent{color:var(--gold2);text-shadow:0 0 30px rgba(212,175,55,.4)}
+.lead{color:var(--muted);font-size:16px;line-height:1.7}
+.heroArt{position:relative;border-radius:18px;overflow:hidden;border:1px solid var(--gold);box-shadow:var(--shadow);min-height:340px;
+  background:linear-gradient(160deg,#241a10,#0d1117);animation:floaty 7s ease-in-out infinite}
+.heroArt img{width:100%;height:100%;object-fit:cover;display:block;min-height:340px}
+.heroArt .cap{position:absolute;left:0;right:0;bottom:0;padding:14px 16px;font-size:13px;
+  background:linear-gradient(0deg,rgba(0,0,0,.85),transparent)}
+@keyframes floaty{50%{transform:translateY(-6px)}}
+.shimmer{background:linear-gradient(100deg,var(--gold2) 20%,#fff 40%,var(--gold2) 60%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;background-size:200% auto;animation:shine 4s linear infinite}
+@keyframes shine{to{background-position:200% center}}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.chip{background:#10151d;border:1px solid var(--line);border-radius:999px;padding:6px 13px;font-size:12px;color:var(--muted)}
+.chip b{color:var(--gold2)}
+/* sections */
+section{margin:34px 0}
+.secHead{display:flex;align-items:baseline;gap:12px;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:16px}
+.secHead h3{font-size:28px;margin:0}
+.secHead span{color:var(--muted);font-size:13px}
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+.grid6{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:860px){.grid6{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.grid6{grid-template-columns:1fr}}
+.cardX{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);
+  border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;cursor:pointer;transition:.2s;position:relative}
+.cardX:hover{transform:translateY(-5px) scale(1.01);border-color:var(--gold);box-shadow:0 16px 50px rgba(0,0,0,.6),0 0 22px rgba(212,175,55,.25)}
+.cardX .ph{height:210px;position:relative;overflow:hidden;background:#222b3a;display:grid;place-items:center;font-size:64px}
+.cardX .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .6s}
+.cardX:hover .ph img{transform:scale(1.07)}
+.cardX .bd{padding:13px 14px}
+.cardX .bd b{font-size:16px}
+.cardX .bd i{color:var(--gold2);font-size:12px;display:block;margin:2px 0 6px}
+.cardX .bd p{font-size:13px;color:var(--muted);line-height:1.55;margin:0}
+.tag{position:absolute;top:10px;left:10px;font-size:11px;font-weight:800;letter-spacing:1px;
+  background:rgba(0,0,0,.7);border:1px solid var(--gold);color:var(--gold2);padding:4px 10px;border-radius:999px}
+.quote{border-left:3px solid var(--gold);background:#10151d;border-radius:0 10px 10px 0;
+  padding:12px 16px;margin:14px 0;font-style:italic;color:var(--ink);line-height:1.65}
+/* timeline */
+.tl{position:relative;margin:10px 0 0 8px;padding-left:22px;border-left:2px solid var(--gold)}
+.tl div{margin:0 0 16px;position:relative}
+.tl div::before{content:"";position:absolute;left:-30px;top:4px;width:12px;height:12px;border-radius:50%;
+  background:radial-gradient(circle at 30% 30%,var(--gold2),#8a6d1f);box-shadow:0 0 10px rgba(212,175,55,.8)}
+.tl b{color:var(--gold2)}
+.tl p{margin:4px 0 0;color:var(--muted);font-size:14px;line-height:1.6}
+/* accordion */
+.acc{border:1px solid var(--line);border-radius:12px;margin:8px 0;background:#10151d;overflow:hidden}
+.acc summary{cursor:pointer;padding:13px 16px;font-weight:700;list-style:none}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary:hover{color:var(--gold2)}
+.acc .ab{padding:0 16px 14px;color:var(--muted);font-size:14px;line-height:1.7}
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(5,7,10,.8);backdrop-filter:blur(4px);display:none;place-items:center;z-index:300;padding:16px}
+.overlay.show{display:grid}
+.sheet{width:min(680px,100%);max-height:90vh;overflow:auto;background:linear-gradient(180deg,#1e2634,#131923);
+  border:1px solid var(--gold);border-radius:18px;padding:22px;box-shadow:var(--shadow);animation:pop .25s}
+@keyframes pop{from{transform:scale(.94);opacity:0}}
+.sheet .hero2{height:260px;border-radius:12px;overflow:hidden;position:relative;background:#222b3a;display:grid;place-items:center;font-size:80px;margin-bottom:12px}
+.sheet .hero2 img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.kv{display:grid;grid-template-columns:130px 1fr;gap:6px 10px;font-size:13.5px;margin:10px 0}
+.kv dt{color:var(--muted);text-transform:uppercase;font-size:11px;letter-spacing:1px}
+.kv dd{margin:0;line-height:1.6}
+.bars{display:flex;gap:8px;margin:8px 0}
+.bar{flex:1;background:#0a0d12;border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:11px;color:var(--muted)}
+.bar i{display:block;height:6px;border-radius:4px;background:linear-gradient(90deg,var(--gold),var(--gold2));margin-top:5px}
+/* rooms */
+.room{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.room .ph{height:150px;position:relative;overflow:hidden;background:#222b3a;display:grid;place-items:center;font-size:52px}
+.room .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.9}
+.room .bd{padding:12px 14px;font-size:13px;color:var(--muted);line-height:1.6}
+.room .bd b{color:var(--ink);font-size:15px}
+.pass{display:inline-block;margin-top:6px;font-size:11.5px;color:#1a1405;font-weight:800;
+  background:linear-gradient(180deg,#f0d678,#b8912a);border-radius:999px;padding:3px 10px}
+/* footer nav */
+.toc{display:flex;gap:8px;flex-wrap:wrap}
+#toTop{position:fixed;right:18px;bottom:18px;z-index:200;display:none}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:26px}
+.kbd{background:#000;border:1px solid var(--line);border-radius:6px;padding:1px 7px;font-size:12px}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<header>
+  <div class="logo"><img src="assets/logo.jpg" alt="logo" onerror="this.outerHTML='🕵️'"></div>
+  <h1>CLUEDO <small>Manuale · Delitto a Villa Nera</small></h1>
+  <nav id="nav">
+    <a href="#storia">Storia</a><a href="#sospetti">Sospetti</a><a href="#armi">Armi</a>
+    <a href="#stanze">Stanze</a><a href="#regole">Regole</a><a href="#strategia">Strategia</a>
+    <a href="cluedo.html" style="border-color:var(--gold)">▶ Gioca</a>
+  </nav>
+</header>
+
+<main>
+  <!-- HERO -->
+  <div class="hero">
+    <div class="reveal in">
+      <div class="kicker">Manuale ufficiale · Edizione Villa Nera</div>
+      <h2>Delitto a <span class="accent shimmer">Villa Nera</span></h2>
+      <p class="lead">La notte del 14 novembre 1953, durante un temporale, il <b>Conte Nero</b> viene trovato morto nel cuore della sua villa.
+      Sei ospiti. Sei armi. Nove stanze. Una sola verità, chiusa in una <b>busta top-secret</b>.
+      Questo manuale è il tuo dossier: lore, moventi, mappe e tattiche da vero detective.</p>
+      <div class="meta">
+        <span class="chip"><b>6</b> sospetti</span><span class="chip"><b>6</b> armi</span>
+        <span class="chip"><b>9</b> stanze</span><span class="chip">⏱ ~30–45 min</span><span class="chip">👥 tu + 2–4 IA</span>
+      </div>
+      <p><a class="btn gold" href="cluedo.html">🔍 Apri il gioco</a>
+      <a class="btn" href="#sospetti">📖 Leggi i dossier</a></p>
+      <p style="font-size:12px;color:var(--muted)">Stile: noir art-deco · Usa gli <span class="kbd">assets/</span> veri del gioco · Suggerimento: premi <span class="kbd">❓ Regole</span> nel gioco per gli asset</p>
+    </div>
+    <div class="heroArt reveal in">
+      <img src="assets/room-biblioteca.jpg" alt="Villa Nera" onerror="this.remove()">
+      <div class="cap">🕯️ <b>Villa Nera</b> — la Biblioteca, dove il Conte custodiva testamento e segreti. <span style="color:var(--gold2)">La verità è in una busta da 3 carte.</span></div>
+    </div>
+  </div>
+
+  <!-- STORIA -->
+  <section id="storia">
+    <div class="secHead reveal"><h3>🕯️ La storia</h3><span>la notte del delitto</span></div>
+    <div class="reveal">
+      <div class="quote">«Pioveva come se il cielo volesse lavare Villa Nera. Alle 23:47 la luce è saltata per tredici secondi.
+      Quando è tornata, il Conte Nero era morto. E nessuno — <i>nessuno</i> — ha confessato.»<br>— dal rapporto dell'Ispettore</div>
+      <p style="line-height:1.75;color:var(--muted)">Il <b style="color:var(--ink)">Conte Nero</b>, collezionista d'arte e uomo di segreti, aveva riunito sei ospiti per annunciare il nuovo testamento.
+      Ognuno aveva un motivo per odiarlo. Il temporale ha isolato la villa: ponte crollato, telefono muto, cancello bloccato.
+      L'assassino è ancora tra gli ospiti — e la polizia arriverà all'alba. Tocca a te scoprire <b style="color:var(--ink)">chi, con cosa e dove</b> prima che le tracce svaniscano.</p>
+      <div class="tl">
+        <div><b>19:30 — La cena.</b><p>Il Conte brinda: «Domani cambierà tutto». Litiga con la Contessa Pavone per un quadro e con il Prof. Prugna per un manoscritto.</p></div>
+        <div><b>21:05 — Il temporale.</b><p>Il Reverendo Verdi propone una preghiera, il Colonnello Senape controlla porte e fucili. La Dott.ssa Bianca serve l'amaro.</p></div>
+        <div><b>22:40 — L'annuncio rimandato.</b><p>Amelia Rosso canta al piano della Sala da Ballo. Il Conte si ritira nello Studio: «Tra un'ora saprete».</p></div>
+        <div><b>23:47 — Tredici secondi di buio.</b><p>Un colpo sordo, un profumo di cera e ferro. Quando la luce torna, il Conte è morto e una finestra della Serra è aperta.</p></div>
+        <div><b>00:15 — Le indagini.</b><p>Sei tu il detective. La busta con le tre carte della verità è sigillata. Interroga, ipotizza, accusa.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOSPETTI -->
+  <section id="sospetti">
+    <div class="secHead reveal"><h3>🎭 I sei sospetti</h3><span>clicca una carta per aprire il dossier</span></div>
+    <div class="grid6" id="susGrid"></div>
+  </section>
+
+  <!-- ARMI -->
+  <section id="armi">
+    <div class="secHead reveal"><h3>🗡️ Le sei armi</h3><span>oggetti reali della villa</span></div>
+    <div class="grid6" id="weaGrid"></div>
+  </section>
+
+  <!-- STANZE -->
+  <section id="stanze">
+    <div class="secHead reveal"><h3>🏛️ Le nove stanze</h3><span>mappa + passaggi segreti</span></div>
+    <p class="reveal" style="color:var(--muted);line-height:1.7">La villa è un tabellone 24×24. Entri dalle <b style="color:var(--gold2)">porte oro tratteggiate</b>.
+    Due passaggi segreti attraversano la casa senza dadi: <b style="color:var(--ink)">Cucina ⇄ Studio</b> e <b style="color:var(--ink)">Serra ⇄ Salotto</b> — li usava il Conte per sparire durante le feste.</p>
+    <div class="grid6" id="roomGrid"></div>
+  </section>
+
+  <!-- REGOLE -->
+  <section id="regole">
+    <div class="secHead reveal"><h3>📜 Regole complete</h3><span>come nel gioco</span></div>
+    <div class="reveal">
+    <details class="acc" open><summary>🎲 1 · Turno: dadi e movimento</summary><div class="ab">
+      Tira i due dadi (2–12) e muoviti di tante caselle lungo i corridoi. Le <b>caselle dorate pulsanti</b> sono le mete raggiungibili calcolate in automatico.
+      Puoi entrare in una stanza solo dalle sue porte. Se resti senza mete, passi. Il tabellone evidenzia porte, partenze e pedine in tempo reale.</div></details>
+    <details class="acc"><summary>💡 2 · Ipotesi e smentite</summary><div class="ab">
+      Se sei in una stanza, fai un'<b>ipotesi</b>: un sospetto + un'arma <i>in quella stanza</i>. Il sospettato viene trascinato lì teatralmente!
+      Gli altri investigatori, in ordine di turno, devono mostrarti <b>una carta</b> (se ne hanno) tra le tre ipotizzate. Se nessuno può smentirti, è un segnale fortissimo: quelle carte potrebbero essere nella busta.</div></details>
+    <details class="acc"><summary>⚖️ 3 · Accusa finale</summary><div class="ab">
+      Quando sei quasi certo, lancia l'<b>accusa finale</b> da ovunque (pulsante rosso). Se indovini le 3 carte della busta <b>vinci subito</b>;
+      se sbagli sei <b>eliminato</b> (le tue carte restano in gioco per le smentite e puoi guardare il finale in modalità rapida). Le IA accusano davvero: se una ci prende prima di te, perdi.</div></details>
+    <details class="acc"><summary>🚇 4 · Passaggi segreti</summary><div class="ab">
+      <b>Cucina ⇄ Studio</b> e <b>Serra ⇄ Salotto</b>: gratis, senza dadi, anche dopo un'ipotesi. Perfetti per cambiare ala della villa e ipotizzare due stanze in due turni.</div></details>
+    <details class="acc"><summary>📓 5 · Taccuino</summary><div class="ab">
+      ✅ = carta esclusa (ce l'ha qualcuno o l'hai vista) · 📌 = sospetta · ❔ = ignota.
+      Le tue carte e quelle che ti mostrano si segnano da sole. Quando in una categoria resta una sola ❔, hai quasi risolto.</div></details>
+    </div>
+  </section>
+
+  <!-- STRATEGIA -->
+  <section id="strategia">
+    <div class="secHead reveal"><h3>🧠 Strategia del detective</h3><span>pensata per battere le IA</span></div>
+    <div class="grid6 reveal" style="grid-template-columns:repeat(2,1fr)">
+      <div class="cardX" style="cursor:default"><div class="bd"><b>🎯 Ipotizza sempre</b><p>Ogni turno in stanza deve produrre un'ipotesi: anche smentita, ogni carta vista è un'esclusione. Non finire mai il turno senza aver chiesto.</p></div></div>
+      <div class="cardX" style="cursor:default"><div class="bd"><b>🌀 Ruota le categorie</b><p>Non fissarti su un sospetto: cambia ogni volta due carte su tre. Così mappi tutte le mani in pochi turni e la busta emerge per esclusione.</p></div></div>
+      <div class="cardX" style="cursor:default"><div class="bd"><b>🚇 Usa i passaggi</b><p>Serra e Cucina sono basi perfette: con un passaggio raggiungi l'ala opposta e ipotizzi dove gli altri non arrivano.</p></div></div>
+      <div class="cardX" style="cursor:default"><div class="bd"><b>⚖️ Accusa al momento giusto</b><p>Accusa con al massimo 1–2 incognite totali. Dopo il turno 28 le IA osano di più: meglio un'accusa ragionata che regalare la vittoria.</p></div></div>
+    </div>
+    <div class="quote reveal">«Il buon detective non cerca il colpevole. Elimina gli innocenti, e chi resta — per quanto improbabile — è l'assassino.»</div>
+    <p class="reveal"><a class="btn gold" href="cluedo.html">▶ Metti in pratica: gioca ora</a></p>
+  </section>
+</main>
+
+<button class="btn" id="toTop">↑ Torna su</button>
+
+<div class="overlay" id="ov"><div class="sheet" id="sheet"></div></div>
+
+<footer>CLUEDO · Delitto a Villa Nera — Manuale illustrato · Usa gli asset veri del gioco · Fatto con ♥ in un unico HTML · <a href="cluedo.html">Gioca</a></footer>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const SUS=[
+ {id:"rosso",name:"Amelia Rosso",title:"la femme fatale",emoji:"👩‍🦰",img:"assets/suspect-rosso.jpg",
+  q:"«Gli uomini mi regalano segreti. Io li conservo… a caro prezzo.»",
+  bio:"Ex cantante di night-club, arrivata a Villa Nera come dama di compagnia della Contessa. Il Conte le aveva promesso una parte nell'eredità in cambio del silenzio su certe lettere.",
+  mov:"Il Conte minacciava di cacciarla senza un soldo dopo averla usata per ricattare un banchiere.",
+  ali:"Dice di aver cantato al piano fino alle 23:40 — ma il pianoforte, quella notte, era scordato e nessuno l'ha sentita dopo le 23:20.",
+  seg:"Nasconde le lettere del Conte in una fodera del suo abito rosso.",s1:5,s2:4,s3:2},
+ {id:"senape",name:"Col. Senape",title:"il colonnello",emoji:"🧔‍♂️",img:"assets/suspect-senape.jpg",
+  q:"«In guerra ho imparato una cosa: chi esita, perde.»",
+  bio:"Eroe di guerra caduto in disgrazia, ospite fisso della villa. Doveva una fortuna al Conte, che gli aveva comprato i debiti di gioco.",
+  mov:"Il nuovo testamento lo cancellava dai creditori: sarebbe finito in prigione per debiti.",
+  ali:"Sostiene di aver ispezionato le finestre della Serra — ma le sue impronte sono sullo Studio, non sulla Serra.",
+  seg:"Porta sempre con sé una pistola scarica «per ricordo». Quella notte era carica.",s1:4,s2:2,s3:4},
+ {id:"bianca",name:"Dott.ssa Bianca",title:"la governante",emoji:"👵",img:"assets/suspect-bianca.jpg",
+  q:"«Questa casa la mando avanti io da trent'anni. E so dove sono i coltelli.»",
+  bio:"Governante e confidente della defunta Contessa madre. Conosce ogni passaggio, ogni chiave, ogni veleno della dispensa.",
+  mov:"Il Conte voleva vendere la villa e licenziare tutta la servitù, lei per prima.",
+  ali:"Dice di aver riassettato la Cucina — ma il grembiule trovato nella Sala da Pranzo profuma di cera di candele dello Studio.",
+  seg:"Ha una copia di tutte le chiavi, compreso lo Studio che il Conte credeva solo suo.",s1:3,s2:5,s3:3},
+ {id:"verdi",name:"Rev. Verdi",title:"il reverendo",emoji:"🧑‍🦳",img:"assets/suspect-verdi.jpg",
+  q:"«Confessate, figlioli. Prima che sia troppo tardi.»",
+  bio:"Parroco del paese e guida spirituale della famiglia. Il Conte finanziava la parrocchia… in cambio di favori poco cristiani.",
+  mov:"Il Conte lo ricattava con le prove di un falso miracolo organizzato per raccogliere offerte.",
+  ali:"Pregava in Biblioteca, dice. Ma il messale era aperto al contrario e la candela ancora calda era in Sala Biliardo.",
+  seg:"Quella notte portava guanti di pelle in tasca, nonostante il caldo dei camini.",s1:2,s2:3,s3:5},
+ {id:"pavone",name:"Cont. Pavone",title:"la contessa",emoji:"👸",img:"assets/suspect-pavone.jpg",
+  q:"«Quella collezione vale più di tutti voi. E mio marito lo sapeva.»",
+  bio:"Cognata del Conte, raffinata e spietata collezionista. Il quadro più prezioso della Sala da Ballo era suo per diritto di nascita.",
+  mov:"Il testamento avrebbe donato la collezione a un museo, tagliandola fuori per sempre.",
+  ali:"Ammirava i quadri, dice — ma il suo foulard blu è stato trovato impigliato nella Corda della Serra.",
+  seg:"Aveva già un acquirente per il quadro: contratto firmato il giorno prima.",s1:4,s2:4,s3:2},
+ {id:"prugna",name:"Prof. Prugna",title:"il professore",emoji:"🧑‍🏫",img:"assets/suspect-prugna.jpg",
+  q:"«La storia giudicherà. Io mi limito a… accelerarla.»",
+  bio:"Storico e archivista del Conte. Aveva scoperto che il manoscritto più prezioso della Biblioteca era un falso — creato da lui stesso anni prima.",
+  mov:"Il Conte stava per smascherarlo pubblicamente durante l'annuncio.",
+  ali:"Catalogava in Biblioteca — ma la scheda del delitto risulta compilata con inchiostro ancora fresco alle 23:50.",
+  seg:"La sua Chiave inglese apre anche la vecchia cassaforte dello Studio.",s1:3,s2:3,s3:4}
+];
+const WEA=[
+ {id:"candelabro",name:"Candelabro",emoji:"🕯️",img:"assets/weapon-candelabro.jpg",d:"Ottone massiccio della Sala da Pranzo, tre bracci. Un colpo secco e non ci si rialza. Quella notte ne mancava uno dal servito — ritrovato con cera fresca sullo Studio."},
+ {id:"pugnale",name:"Pugnale",emoji:"🗡️",img:"assets/weapon-pugnale.jpg",d:"Lama da collezione del Colonnello, affilata «per ricordo». Custodita nella Biblioteca in una teca che la Dott.ssa Bianca apriva ogni mattina per spolverare."},
+ {id:"tubo",name:"Tubo di piombo",emoji:"🔩",img:"assets/weapon-tubo.jpg",d:"Dalla cantina, dove il Professore diceva di cercare manoscritti. Pesante, silenzioso, non lascia schegge: l'arma di chi conosce la casa."},
+ {id:"pistola",name:"Pistola",emoji:"🔫",img:"assets/weapon-pistola.jpg",d:"La pistola «scarica» del Colonnello. Il colpo quella notte non si è sentito per il tuono — o perché chi ha sparato conosceva il momento esatto del fulmine."},
+ {id:"corda",name:"Corda",emoji:"🪢",img:"assets/weapon-corda.jpg",d:"Corda della Serra, usata per le orchidee della Contessa. Fibre blu pavone trovate sopra: qualcuno l'ha maneggiata con fretta."},
+ {id:"chiave",name:"Chiave inglese",emoji:"🔧",img:"assets/weapon-chiave.jpg",d:"Della cassetta del Professore. Abbastanza pesante da stordire, abbastanza comune da poter essere di chiunque — il perfetto capro espiatorio."}
+];
+const ROO=[
+ {id:"cucina",name:"Cucina",icon:"🍳",img:"assets/room-cucina.jpg",d:"Regno della Dott.ssa Bianca: rame, vapore e coltelli. Da qui parte il passaggio segreto per lo Studio — lo usava il Conte per la cena di mezzanotte.",pass:"🚇 Passaggio → Studio"},
+ {id:"ballo",name:"Sala da Ballo",icon:"💃",img:"assets/room-ballo.jpg",d:"Lampadari e parquet dove Amelia cantava. Il quadro conteso della Contessa domina la parete nord. Ottima acustica: qui si sente tutto, tranne quella notte.",pass:null},
+ {id:"serra",name:"Serra",icon:"🌿",img:"assets/room-serra.jpg",d:"Orchidee, vetri appannati e la finestra trovata aperta. Passaggio segreto per il Salotto tra le felci — lo conoscevano in due: il Conte e chi l'ha ucciso.",pass:"🚇 Passaggio → Salotto"},
+ {id:"pranzo",name:"Sala da Pranzo",icon:"🍷",img:"assets/room-pranzo.jpg",d:"Tavola per dodici, argenteria e il servito di candelabri — uno mancante. Il grembiule della governante trovato qui non doveva esserci.",pass:null},
+ {id:"biliardo",name:"Sala Biliardo",icon:"🎱",img:"assets/room-biliardo.jpg",d:"Panno verde, whisky e sigari del Colonnello. La candela ancora calda del Reverendo è stata trovata proprio sul bordo del tavolo.",pass:null},
+ {id:"biblioteca",name:"Biblioteca",icon:"📚",img:"assets/room-biblioteca.jpg",d:"Testamento, manoscritti e la teca del pugnale. Il Professore ci viveva; il Reverendo ci pregava (male). Odore di carta e segreti.",pass:null},
+ {id:"salotto",name:"Salotto",icon:"🛋️",img:"assets/room-salotto.jpg",d:"Camino, divani e spioncini acustici verso l'Ingresso. Chi sedeva qui sentiva chiunque entrasse — passaggio segreto per la Serra dietro la libreria.",pass:"🚇 Passaggio → Serra"},
+ {id:"ingresso",name:"Ingresso",icon:"🚪",img:"assets/room-ingresso.jpg",d:"Scalone, orologio fermo alle 23:47 e l'impermeabile di nessuno bagnato. Tutti dicono di non esserci passati. Tutti mentono.",pass:null},
+ {id:"studio",name:"Studio",icon:"🕰️",img:"assets/room-studio.jpg",d:"Il cuore del delitto: scrivania, cassaforte e il passaggio per la Cucina. Il Conte ci si chiudeva «per pensare». Quella notte qualcuno è entrato senza bussare.",pass:"🚇 Passaggio → Cucina"}
+];
+function bar(v){return `<i style="width:${v*20}%"></i>`;}
+function susCard(s){return `<article class="cardX reveal" data-s="${s.id}">
+  <span class="tag">SOSPETTO</span><div class="ph">${s.emoji}<img src="${s.img}" alt="${s.name}" loading="lazy" onerror="this.remove()"></div>
+  <div class="bd"><b>${s.emoji} ${s.name}</b><i>${s.title}</i><p>${s.bio.slice(0,110)}… <b style="color:var(--gold2)">Apri il dossier →</b></p></div></article>`;}
+function weaCard(w){return `<article class="cardX reveal" data-w="${w.id}">
+  <span class="tag">ARMA</span><div class="ph">${w.emoji}<img src="${w.img}" alt="${w.name}" loading="lazy" onerror="this.remove()"></div>
+  <div class="bd"><b>${w.emoji} ${w.name}</b><p>${w.d.slice(0,110)}…</p></div></article>`;}
+$("susGrid").innerHTML=SUS.map(susCard).join("");
+$("weaGrid").innerHTML=WEA.map(weaCard).join("");
+$("roomGrid").innerHTML=ROO.map(r=>`<article class="room reveal"><div class="ph">${r.icon}<img src="${r.img}" alt="${r.name}" loading="lazy" onerror="this.remove()"></div>
+  <div class="bd"><b>${r.icon} ${r.name}</b><br>${r.d}${r.pass?`<br><span class="pass">${r.pass}</span>`:""}</div></article>`).join("");
+function openSheet(html){$("sheet").innerHTML=html;$("ov").classList.add("show");}
+function closeSheet(){$("ov").classList.remove("show");}
+$("ov").addEventListener("click",e=>{if(e.target.id==="ov")closeSheet();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet();});
+document.querySelectorAll("[data-s]").forEach(c=>c.onclick=()=>{
+  const s=SUS.find(x=>x.id===c.dataset.s);
+  openSheet(`<div class="hero2">${s.emoji}<img src="${s.img}" alt="${s.name}" onerror="this.remove()"></div>
+   <h2 style="margin:0">Dossier: <span style="color:var(--gold2)">${s.name}</span></h2>
+   <p style="color:var(--muted);margin:4px 0">${s.title} · Villa Nera, ospite</p>
+   <div class="quote">${s.q}</div>
+   <dl class="kv"><dt>Storia</dt><dd>${s.bio}</dd><dt>Movente</dt><dd>🔪 ${s.mov}</dd>
+   <dt>Alibi</dt><dd>🕰️ ${s.ali}</dd><dt>Segreto</dt><dd>🤫 ${s.seg}</dd></dl>
+   <div class="bars"><div class="bar">Sospetto${bar(s.s1)}</div><div class="bar">Fascino${bar(s.s2)}</div><div class="bar">Freddezza${bar(s.s3)}</div></div>
+   <p><button class="btn gold" onclick="document.getElementById('ov').classList.remove('show')">Chiudi dossier</button>
+   <a class="btn" href="cluedo.html">Interroga nel gioco →</a></p>`);
+});
+document.querySelectorAll("[data-w]").forEach(c=>c.onclick=()=>{
+  const w=WEA.find(x=>x.id===c.dataset.w);
+  openSheet(`<div class="hero2">${w.emoji}<img src="${w.img}" alt="${w.name}" onerror="this.remove()"></div>
+   <h2 style="margin:0">Reperto: <span style="color:var(--gold2)">${w.name}</span> ${w.emoji}</h2>
+   <p style="color:var(--muted);line-height:1.7">${w.d}</p>
+   <p style="font-size:13px;color:var(--muted)">Nel gioco ogni arma è una carta: se te la mostrano, è esclusa dalla busta (✅ sul taccuino).</p>
+   <p><button class="btn gold" onclick="document.getElementById('ov').classList.remove('show')">Chiudi</button></p>`);
+});
+/* reveal on scroll */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target);}}),{threshold:.12});
+document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
+/* progress + nav + toTop */
+const links=[...document.querySelectorAll("#nav a[href^='#']")];
+addEventListener("scroll",()=>{
+  const h=document.documentElement;
+  $("progress").style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+"%";
+  $("toTop").style.display=h.scrollTop>700?"block":"none";
+  let cur="";links.forEach(a=>{const s=document.querySelector(a.getAttribute("href"));if(s&&s.getBoundingClientRect().top<160)cur=a.getAttribute("href");});
+  links.forEach(a=>a.classList.toggle("active",a.getAttribute("href")===cur));
+},{passive:true});
+$("toTop").onclick=()=>scrollTo({top:0,behavior:"smooth"});
+</script>
+</body>
+</html>

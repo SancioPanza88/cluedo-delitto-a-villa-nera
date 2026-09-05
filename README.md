@@ -17,6 +17,13 @@ Un clone giocabile di **Cluedo in un unico file HTML**. Nessun server, nessuna b
 ![Taccuino deduttivo](screenshots/04-taccuino.png)
 *Taccuino automatico per escludere sospetti, armi e stanze*
 
+## 📖 Manuale illustrato
+
+Leggi la lore completa — dossier dei 6 sospetti (movente, alibi, segreto), 6 armi, 9 stanze, timeline del delitto e tattiche — in **[manuale.html](manuale.html)**, con lo stesso stile noir-oro animato del gioco e gli asset veri.
+
+![Manuale - dossier e lore](screenshots/05-manuale.png)
+*Il manuale: storia, sospetti cliccabili, armi, mappa stanze e regole*
+
 ---
 
 ## ✨ Funzionalità
