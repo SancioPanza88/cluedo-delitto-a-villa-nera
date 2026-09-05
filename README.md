@@ -4,6 +4,13 @@ Un clone giocabile di **Cluedo in un unico file HTML**. Nessun server, nessuna b
 
 > Il Conte Nero è stato assassinato stanotte a Villa Nera. Sei sospetti, sei armi, nove stanze. Scopri **chi**, **con cosa** e **dove** prima degli altri investigatori.
 
+## 🌐 Gioca online
+
+- 🎮 **[Gioca a CLUEDO](https://sanciopanza88.github.io/cluedo-delitto-a-villa-nera/cluedo.html)** — il gioco completo nel browser
+- 📖 **[Leggi il Manuale](https://sanciopanza88.github.io/cluedo-delitto-a-villa-nera/manuale.html)** — lore, dossier sospetti, armi, stanze e strategia
+
+Oppure in locale: scarica la repo e apri `cluedo.html` / `manuale.html` con un doppio click.
+
 ---
 
 ## 📸 Screenshot
@@ -19,7 +26,7 @@ Un clone giocabile di **Cluedo in un unico file HTML**. Nessun server, nessuna b
 
 ## 📖 Manuale illustrato
 
-Leggi la lore completa — dossier dei 6 sospetti (movente, alibi, segreto), 6 armi, 9 stanze, timeline del delitto e tattiche — in **[manuale.html](manuale.html)**, con lo stesso stile noir-oro animato del gioco e gli asset veri.
+Leggi la lore completa — dossier dei 6 sospetti (movente, alibi, segreto), 6 armi, 9 stanze, timeline del delitto e tattiche — in **[manuale.html](manuale.html)** o **[online qui](https://sanciopanza88.github.io/cluedo-delitto-a-villa-nera/manuale.html)**, con lo stesso stile noir-oro animato del gioco e gli asset veri.
 
 ![Manuale - dossier e lore](screenshots/05-manuale.png)
 *Il manuale: storia, sospetti cliccabili, armi, mappa stanze e regole*
@@ -41,8 +48,9 @@ Leggi la lore completa — dossier dei 6 sospetti (movente, alibi, segreto), 6 a
 ## 📁 Struttura progetto
 
 ```
-/
+/ (branch main, pubblicato su GitHub Pages)
 ├── cluedo.html          # ← tutto il gioco (HTML + CSS + JS)
+├── manuale.html         # ← manuale illustrato con lore e dossier
 ├── assets/              # ritratti, armi, stanze, logo, texture (opzionali ma consigliati)
 │   ├── suspect-rosso.jpg / -senape / -bianca / -verdi / -pavone / -prugna.jpg
 │   ├── weapon-candelabro / -pugnale / -tubo / -pistola / -corda / -chiave.jpg
